@@ -1,0 +1,15 @@
+# pycache binaries
+*/__pycache__/*
+
+# ruff (a linter) cache
+.ruff_cache/
+
+# macOS/iOS weird, um, cache?
+._*
+# I have no clue ._* files are supposed to be for
+# but I don't really want them clogging up my git
+
+# for whatever reason, I made this folder, but
+# it's not code or nessesary to run the game
+# so I'm omitting it
+"random promotional images/"

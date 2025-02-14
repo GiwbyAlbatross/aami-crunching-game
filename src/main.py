@@ -1,0 +1,351 @@
+" The AAMI crunching game. "
+
+__lisence__ = 'Um the AAMI crunching game is a paid game (totally). '
+
+"""
+TODO:
+- add status effects from hats [IN PROGRESS]
+- ~
+"""
+
+import os
+import math
+import random
+import pygame
+from pygame.locals import QUIT, KEYDOWN, USEREVENT, \
+     K_ESCAPE, K_F3, \
+     FULLSCREEN, SRCALPHA
+import stuuf
+from sprites import *  # all sprites that were in main.py are now in sprites.py
+from settings import * # so that all of the modules share the same constants...
+import effect
+import util
+
+current_fps = FPS # update sometimes I guess
+scorestr = "Score: %02d"
+fps_frmt = "FPS: %03f"
+#if DEBUG: tinafey_likelihood = 128
+
+# dev stuff
+if not DEBUG:
+    import warnings
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+def renderscore(surf):
+    surf.blit(pygame.font.Font(None, 128).render(scorestr % AAMIs_crunched, False, (240,240,242)), (10,10))
+def renderFPS(surf, fps):
+    surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False, (242,240,240)), (12, scr_h - 32))
+def rose_above(a1, a2, b):
+    return (a1 <= b) and (not (a2 < b))
+
+if __name__ == '__main__':
+    pygame.init()
+
+    # open a window
+    scr = pygame.display.set_mode((scr_w, scr_h))
+    
+    # set the window title
+    pygame.display.set_caption('Loading... | %s' % TITLE)
+    # and icon
+    #pygame.display.set_icon(pygame.image.load(os.path.join(
+    # and loading screen
+    try:scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
+    except FileNotFoundError as e:
+        pygame.quit()
+        print("ERROR: loading image not found. perhaps run from wrong directory.")
+        print(f"Real Exception: {type(e).__name__}: {str(e)}")
+        raise SystemExit(1)
+
+    # state variables
+    running = 1
+    AAMIs_crunched = 0
+    you_won_fname = ...
+    winning_music = ...
+    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False)
+    setflags(flags) # from sprites.py
+    
+    if DEBUG:
+        import crunchDebug
+        flags.debugwindow = crunchDebug.DebugWindow(flags)
+
+    # open logs
+    deathmsgs = open('death-messages.log', 'wt')
+    load_deathmessage_log(deathmsgs) # also from sprites.py
+
+    # events
+    GAME_TICK = USEREVENT + 1
+    pygame.time.set_timer(GAME_TICK, (1024 // 20)) # 20 times a 'second' (second is 1024 millis)
+    ADD_AAMI = USEREVENT + 2
+    pygame.time.set_timer(ADD_AAMI, (512 * ((HARDNESS + 1)//2)))
+    GET_FPS = USEREVENT + 3
+    pygame.time.set_timer(GET_FPS, 768)
+    RESET = USEREVENT + 4
+    #pygame.mixer.set_endevent(RESET)
+
+    # load and initializse sounds
+    pygame.mixer.init()
+    crunch = pygame.mixer.Sound(file=os.path.join('assets',
+                                                  'soundfx',
+                                                  'crunch.wav'))
+    so_many_tinafeys = pygame.mixer.Sound(file=os.path.join('assets',
+                                                  'soundfx',
+                                                  'so_many_tinafeys.wav'))
+    bodydoubles_short = pygame.mixer.Sound(file=os.path.join('assets',
+                                                  'soundfx',
+                                                  'so_i_hired_body_doubles.wav'))
+    bodydoubles_long  = pygame.mixer.Sound(file=os.path.join('assets',
+                                                  'soundfx',
+                                                  'so_i_hired_body_doubles_to_help.wav'))
+
+
+    # sprites and groups for said sprites
+    player = Player()
+    currenthat: Hat = Hat(on=player)
+    tina = None
+    tinacontainer = util.TinaContainer()
+    AAMIs = pygame.sprite.Group()
+    tinas = pygame.sprite.Group()
+    falling_hats = pygame.sprite.Group()
+    particles = pygame.sprite.Group()
+    
+    # test effects
+    #if DEBUG: player.effects.append(effect.Repulsiveness(player, ..., level=1, tinas=tinas))
+    
+    # you won screen
+    you_won  = ...
+    you_died = pygame.image.load(os.path.join('assets', 'you_died.png')).convert_alpha()
+
+    # clock
+    tiktok = pygame.time.Clock()
+
+    pygame.display.set_caption(TITLE)
+
+    while running:
+        tina = tinacontainer.get_tina()
+        try:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    running = 0
+                    flags.running = False
+                elif event.type == GAME_TICK:
+                    # do game tick stuff
+                    if DEBUG: player.update_logic(particles)
+                    player.current_hat = currenthat
+                    before_AAMIs_crunched = AAMIs_crunched
+                    for hat in falling_hats:
+                        hat.update_logic()
+                    for aami in AAMIs:
+                        aami.update_logic()
+                        if aami.rect.colliderect(player.rect) and player.crunching \
+                           and (not aami.crunched):
+                            aami.crunched = True
+                            aami.crunchedBy = 'Noswald'
+                            AAMIs_crunched += 1
+                            crunch.play()
+                        if tinacontainer.has_tina():
+                            if aami.rect.colliderect(tina.rect) and (random.random() > 0.45):
+                                aami.crunched = True
+                                aami.crunchedBy = 'TinaFey'
+                                if random.random() > 0.1:
+                                    crunch.play()
+                            # tina can now crunch AAMIs
+                    for harmless_tina in tinas:
+                        harmless_tina.update_logic()
+                        if not harmless_tina.is_on_screen():
+                            harmless_tina.kill('fell off the screen.')
+                    tobe_fallinghats = []
+                    for hat in falling_hats:
+                        hat.update_logic()
+                        if player.rect.colliderect(hat.rect):
+                            """
+                            if currenthat is not None:
+                                currenthat.kill()
+                                currenthat.add(falling_hats)
+                                currenthat.on = None
+                            """
+                            currenthat = hat
+                            currenthat.on = player
+                            player.current_hat = hat
+                            hat.kill()
+                            effect.add_effect_from_hat(player, hat, tina=tinacontainer, tinas=tinas).apply_once()
+                            fakeFallingHat = Hat(posx=hat.rect.centerx, posy=hat.rect.centery, hat_id=hat.hatId)
+                            tobe_fallinghats.append(fakeFallingHat)
+                        if hat.rect.top > scr_h:
+                            hat.kill('fell off the bottom of the screen.') # kill hats that fell off the screen
+                    for hat in tobe_fallinghats: hat.add(falling_hats)
+                    del tobe_fallinghats
+                    if tinacontainer.has_tina():
+                        if tina.rect.colliderect(player.rect):
+                            player.crunched = True
+                            player.crunchedBy = 'Tina Fey, with love'
+                            crunch.play()
+                            pygame.display.set_caption("You lost | %s" % TITLE)
+                        tina.update_logic()
+                        if not tina.is_on_screen():
+                            tina.kill('fell off the screen.')
+                            tinacontainer.set_null_tina()
+                            tina = None # she'll respawn, don't worry
+                    else: pass # there is no tina fey (only Zuhl)
+                    if flags.you_won: # do happy/walking texture on player
+                        player.surf.fill((0,0,0,0))
+                        player.surf.blit(pygame.transform.flip(player.walking1,
+                                                               bool(player.direction), False), (0,0))
+                    if before_AAMIs_crunched != AAMIs_crunched:
+                        print(f"AAMIs crunched: {AAMIs_crunched}                 ")
+                        if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
+                            you_won_fname = os.path.join('assets', 'you_won.png')
+                            if VERY_VERBOSE: print("Generated you_won_fname")
+                        if AAMIs_crunched > 45 and you_won is ...: #     # leave ellipsis in
+                            you_won = pygame.image.load(you_won_fname)
+                            if VERY_VERBOSE: print("Loaded you_won")
+                        if AAMIs_crunched > 48 and winning_music is ...: # ...
+                            if VERY_VERBOSE: print("Loading music for when you win :)")
+                            winning_music = not None
+                            pygame.mixer.music.load(stuuf.ra)
+                        if rose_above(before_AAMIs_crunched, AAMIs_crunched, 50):
+                            # you won
+                            print("You Won!")
+                            flags.you_won = True
+                            pygame.display.set_caption("You Won! | AAMI crunching")
+                            pygame.mixer.music.play(0)
+                        del before_AAMIs_crunched
+                    
+                    # spawn tina
+                    if random.randint(0,tinafey_likelihood) == 1: # rare, but can happen
+                        if tinacontainer.has_tina():
+                            # SPAWN A TINA FEY!!!!!!!!!!
+                            tina = TinaFey(target=player)
+                            tinacontainer.set_tina(tina)
+                            for effect in player.effects:
+                                if effect.name == 'repulsiveness':
+                                    effect.tina = tinacontainer
+                        #if random.randint(0,3) < 2: # same
+                        if random.random() > 0.45:
+                            if not tinacontainer.has_tina():
+                                for i in range(random.randint(4, HARDNESS*5)):
+                                    tinas.add(TinaFey(
+                                        pos=(random.randint(0, scr_w),
+                                             random.randint(0,scr_h)),
+                                        do_dumb_pathfinding=True))
+                                
+                                # play sound effect
+                                if random.random() > 0.1:
+                                    bodydoubles_long.play()
+                                else:
+                                    bodydoubles_short.play()
+                            else:
+                                tinas.add(TinaFey(
+                                        pos=(random.randint(0, scr_w),
+                                             random.randint(0,scr_h)),
+                                        do_dumb_pathfinding=True))
+                                if random.random() < 0.1:
+                                    bodydoubles_long.play()
+                                else:
+                                    bodydoubles_short.play()
+                        else:
+                            # play sound effect for single tina
+                            so_many_tinafeys.play()
+                        tinacontainer.set_tina(TinaFey(target=player))
+                    deathmsgs.flush() # each tick
+                    for particle in particles:
+                        particle.update_logic()
+                        if not particle.is_on_screen():
+                            particle.kill('fell off the screen.')
+                    if DEBUG: flags.debugwindow.update()
+                elif event.type == ADD_AAMI:
+                    # add an AAMI to the collection of AAMIs
+                    new_AAMI = AAMI((0,random.randint(0,scr_h)))
+                    AAMIs.add(new_AAMI)
+                    del new_AAMI
+                    # we also make an attempt to drop a hat for the player
+                    # to catch and gain abilities from
+                    if random.random() > 0.69:
+                        #dropped_hat = Hat(random.randint(0,scr_w), 'top')
+                        dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
+                        effect.process_hat_event(hatevent)
+                        falling_hats.add(dropped_hat)
+                        if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
+                        #del dropped_hat
+                elif event.type == GET_FPS:
+                    current_fps = tiktok.get_fps()
+                    print(f"FPS: {current_fps}", end='\r')
+                elif event.type == KEYDOWN:
+                    if (keys := pygame.key.get_pressed())[K_ESCAPE]:
+                        if flags.you_won:
+                            pygame.mixer.music.stop()
+                            tinafey_likelihood += AAMIs_crunched # gets harder
+                            AAMIs_crunched -= 45 # basically resets the game
+                            flags.you_won = False
+                        else:
+                            flags.running = False
+                            running = 0
+                    elif keys[K_F3] and __debug__:
+                        flags.show_hitboxes = not flags.show_hitboxes
+                """elif event.type == RESET: # doesn't happen, removed for omtimisation reasons
+                    AAMIs_crunched = 1
+                    flags = stuuf.Flags(running=True, you_won=False)
+                    #next_AAMI_speed = 6"""
+            scr.fill((1,1,1))
+            showrects = flags.show_hitboxes
+            
+            scr.blit(player.surf, player.rect)
+            scr.blit(currenthat.surf, currenthat.rect)
+            if showrects:
+                pygame.draw.rect(scr, (255, 1, 200), currenthat.rect, 1)
+                if player.crunching:
+                    pygame.draw.rect(scr, (255,0,0), player.rect, 6)
+                pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
+            currenthat.update_pos()
+            player.update_keypresses(pygame.key.get_pressed())
+            player.update_pos()
+            tina = tinacontainer.get_tina()
+            if tinacontainer.has_tina():
+                tina.update_pos()
+                scr.blit(tina.surf, tina.rect)
+                if showrects:
+                    pygame.draw.rect(scr, (245, 1, 0), tina.rect, 5)
+                    pygame.draw.line(scr, (240, 120, 0), tina.rect.center,
+                                    [tina.rect.centerx + tina.mv[0]*16, tina.rect.centery + tina.mv[1]*16],
+                                    2)
+            for aami in AAMIs:
+                scr.blit(aami.surf, aami.rect)
+                if showrects:
+                    pygame.draw.rect(scr, (0,1,245), aami.rect, 2)
+                aami.update_pos()
+            for harmless_tina in tinas:
+                scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
+                if showrects:
+                    pygame.draw.line(scr, (0, 120, 240), harmless_tina.rect.center,
+                                    [harmless_tina.rect.centerx + harmless_tina.mv[0]*8, harmless_tina.rect.centery + harmless_tina.mv[1]*8],
+                                    1)
+                harmless_tina.update_pos()
+            for particle in particles:
+                particle.update_pos()
+                particle.render(scr)
+            for hat in falling_hats: # also caused much trouble
+                hat.update_pos()
+                scr.blit(hat.surf, hat.rect)
+                if showrects:
+                    pygame.draw.rect(scr, (240,1,255), hat.rect, 4)
+            
+            if VERY_VERBOSE:
+                flags.debugwindow.update()
+            
+            renderscore(scr)
+            if flags.you_won: scr.blit(you_won, (0,0))
+            if player.crunched: scr.blit(you_died, (0,0))
+            if SHOW_FPS and __debug__: renderFPS(scr, current_fps)
+            if DEBUG:
+                debugwindow = flags.debugwindow
+                scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
+                del debugwindow
+            pygame.display.flip()
+            tiktok.tick(FPS)
+        except KeyboardInterrupt:
+            flags.running = False
+            break
+    
+    deathmsgs.close()
+    
+    pygame.quit()
+    quit()
