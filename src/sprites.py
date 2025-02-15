@@ -120,6 +120,45 @@ class Hat(Entity):
             self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
             self.mv = [0,0]
         self.rect.move_ip(self.mv)
+    def activate_special_ability(self):
+        global flags
+        #if self.hatId == 'wizardry':
+        if True:
+            mypos = pygame.Vector2(self.on.rect.center)
+            AAMIs: pygame.sprite.Group = flags.AAMIs
+            tinas: pygame.sprite.Group = flags.tinas
+            tinatainer = flags.tinatainer # tinacontainer
+            closest_aami: AAMI = None
+            closest_aami_dist: float = 42e10000000000000000000000000000000000000000000000000
+            closest_tina: TinaFey = None
+            closest_tina_dist: float = 42e10000000000000000000000000000000000000000000000000
+            for aami in AAMIs:
+                aamipos = pygame.Vector2(aami.rect.center)
+                dist = (aamipos - mypos).length()
+                if dist < closest_aami_dist:
+                    closest_aami = aami
+            for tina in tinas:
+                tinapos = pygame.Vector2(tina.rect.center)
+                dist = (tinapos - mypos).length()
+                if dist < closest_tina_dist:
+                    closest_tina = tina
+            try: aamipos = pygame.Vector2(closest_aami.rect.center)
+            except AttributeError: return # if there is no AAMI to attack, don't bother
+            try:
+                tinapos = pygame.Vector2(closest_tina.rect.center)
+                aamidist= (mypos - aamipos).length()
+                tinadist= (mypos - tinapos).length()
+                if aamidist < tinadist:
+                    to_kill = closest_aami
+                else:
+                    to_kill = closest_tina
+            except AttributeError:
+                to_kill = closest_aami
+            
+            # attack `to_kill` in a cool-looking way
+            print("Attacking", repr(to_kill), "in a cool-looking way")
+            to_kill.kill()
+        
 
 class Player(Entity):
     current_hat: Hat = None

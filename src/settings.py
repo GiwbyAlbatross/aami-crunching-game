@@ -1,4 +1,4 @@
-HARDNESS = 1 # medium by default
+HARDNESS = 2 # medium by default
 TITLE = "AAMI crunching"
 scr_w = 1024
 scr_h = 768
@@ -7,7 +7,7 @@ FPS = 60
 
 SHOW_FPS = True
 DEBUG = True # should be False for release versions
-VERY_VERBOSE = True # MUST be False in release versions
+VERY_VERBOSE = False # MUST be False in release versions
 
 
 

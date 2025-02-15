@@ -87,7 +87,7 @@ class DumbPathfindingEngine:
     def fmv(self): return pygame.Vector2(self._mv[:2])
     def _generate_target_coords(self):
         " private array<int> _generate_target_coords() "
-        return [random.randint(0, self.scr_size[0]), random.randint(0,self.scr_size[1])]
+        return [random.randint(-100, self.scr_size[0] + 100), random.randint(-100,self.scr_size[1] + 100)]
     def update(self):
         self.pos = self.rect.center
         rawmv = [(self.target[0] - self.pos[0]), (self.target[1] - self.pos[1])]

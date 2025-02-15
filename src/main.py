@@ -13,7 +13,7 @@ import math
 import random
 import pygame
 from pygame.locals import QUIT, KEYDOWN, USEREVENT, \
-     K_ESCAPE, K_F3, \
+     K_ESCAPE, K_F3, K_z, \
      FULLSCREEN, SRCALPHA
 import stuuf
 from sprites import *  # all sprites that were in main.py are now in sprites.py
@@ -24,7 +24,7 @@ import util
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-if DEBUG: tinafey_likelihood = 128
+#if DEBUG: tinafey_likelihood = 128
 
 # dev stuff
 if not DEBUG:
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     # sprites and groups for said sprites
     player = Player()
     flags.player = player
-    currenthat: Hat = Hat(on=player)
+    currenthat: Hat = Hat('wizardry', on=player)
     tina = None
     tinacontainer = util.TinaContainer()
     flags.tinatainer = tinacontainer
@@ -222,7 +222,7 @@ if __name__ == '__main__':
                     
                     # spawn tina
                     if random.randint(0,tinafey_likelihood) == 1: # rare, but can happen
-                        if tinacontainer.has_tina():
+                        if not tinacontainer.has_tina():
                             # SPAWN A TINA FEY!!!!!!!!!!
                             tina = TinaFey(target=player)
                             tinacontainer.set_tina(tina)
@@ -231,7 +231,7 @@ if __name__ == '__main__':
                                     effect_.tina = tinacontainer
                         #if random.randint(0,3) < 2: # same
                         if random.random() > 0.45:
-                            if not tinacontainer.has_tina():
+                            if tinacontainer.has_tina():
                                 for i in range(random.randint(4, HARDNESS*5)):
                                     tinas.add(TinaFey(
                                         pos=(random.randint(0, scr_w),
@@ -246,8 +246,7 @@ if __name__ == '__main__':
                             else:
                                 tinas.add(TinaFey(
                                         pos=(random.randint(0, scr_w),
-                                             random.randint(0,scr_h)),
-                                        do_dumb_pathfinding=True))
+                                             random.randint(0,scr_h))))
                                 if random.random() < 0.1:
                                     bodydoubles_long.play()
                                 else:
@@ -281,7 +280,7 @@ if __name__ == '__main__':
                     current_fps = tiktok.get_fps()
                     print(f"FPS: {current_fps}", end='\r')
                 elif event.type == KEYDOWN:
-                    if (keys := pygame.key.get_pressed())[K_ESCAPE]:
+                    if event.key == K_ESCAPE:
                         if flags.you_won:
                             pygame.mixer.music.stop()
                             tinafey_likelihood += AAMIs_crunched # gets harder
@@ -290,8 +289,10 @@ if __name__ == '__main__':
                         else:
                             flags.running = False
                             running = 0
-                    elif keys[K_F3] and __debug__:
+                    elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
+                    elif event.key == K_z:
+                        player.current_hat.activate_special_ability()
                 """elif event.type == RESET: # doesn't happen, removed for omtimisation reasons
                     AAMIs_crunched = 1
                     flags = stuuf.Flags(running=True, you_won=False)

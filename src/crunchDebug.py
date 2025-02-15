@@ -35,8 +35,9 @@ class DebugWindow(pygame.Surface):
     def update(self):
         self.clear()
         self.renderText(f"HatranksUpto: {get_hatranksupto()}", 0)
-        self.renderText("Flags:", 1)
-        self.renderText(repr(self.flags), 2)
+        self.renderText("Tina present." if self.flags.tinatainer.has_tina() else "No Tina", 1)
+        #self.renderText("Flags:", 1)
+        #self.renderText(repr(self.flags), 2)
         self.renderText(HatEventType.toString(self.hatevent), self.lines-1)
     def log_hatevent(self, hatevent: int):
         self.hatevent = hatevent

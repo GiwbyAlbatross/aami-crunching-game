@@ -109,7 +109,8 @@ def process_aquire_hat(hat: sprites.Hat) -> int:
     if rank < currentrank:
         return HatEventType.CATCH_BEL
     if rank > currentrank:
-        return HatEventType.ADD_ABO
+        return HatEventType.CATCH_ABO
+    else: return HatEventType.CATCH_HAT
 
 def process_hat_event(event_type: int) -> None:
     global hatranks_upto
