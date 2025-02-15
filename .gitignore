@@ -9,7 +9,7 @@
 # I have no clue ._* files are supposed to be for
 # but I don't really want them clogging up my git
 
-# for whatever reason, I made this folder, but
-# it's not code or nessesary to run the game
-# so I'm omitting it
-"random promotional images/"
+# this changes when the game is run, so it will
+# mess with git diffs an make the game slower to
+# download when it's not even nessesary to run it
+death-messages.log

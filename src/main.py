@@ -24,12 +24,13 @@ import util
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-#if DEBUG: tinafey_likelihood = 128
+if DEBUG: tinafey_likelihood = 128
 
 # dev stuff
 if not DEBUG:
     import warnings
     warnings.filterwarnings('ignore', category=RuntimeWarning)
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 def renderscore(surf):
     surf.blit(pygame.font.Font(None, 128).render(scorestr % AAMIs_crunched, False, (240,240,242)), (10,10))
@@ -49,7 +50,9 @@ if __name__ == '__main__':
     # and icon
     #pygame.display.set_icon(pygame.image.load(os.path.join(
     # and loading screen
-    try:scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
+    try:
+        scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
+        pygame.display.update()
     except FileNotFoundError as e:
         pygame.quit()
         print("ERROR: loading image not found. perhaps run from wrong directory.")
@@ -100,16 +103,20 @@ if __name__ == '__main__':
 
     # sprites and groups for said sprites
     player = Player()
+    flags.player = player
     currenthat: Hat = Hat(on=player)
     tina = None
     tinacontainer = util.TinaContainer()
+    flags.tinatainer = tinacontainer
     AAMIs = pygame.sprite.Group()
     tinas = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
     particles = pygame.sprite.Group()
+    flags.AAMIs = AAMIs
+    flags.tinas = tinas
     
     # test effects
-    #if DEBUG: player.effects.append(effect.Repulsiveness(player, ..., level=1, tinas=tinas))
+    #if DEBUG: player.effects.append(effect.Repulsiveness(player, tina=tinacontainer, level=1, tinas=tinas))
     
     # you won screen
     you_won  = ...
@@ -167,7 +174,10 @@ if __name__ == '__main__':
                             currenthat.on = player
                             player.current_hat = hat
                             hat.kill()
+                            hatevent = effect.process_aquire_hat(hat)
                             effect.add_effect_from_hat(player, hat, tina=tinacontainer, tinas=tinas).apply_once()
+                            effect.process_hat_event(hatevent)
+                            flags.debugwindow.log_hatevent(hatevent)
                             fakeFallingHat = Hat(posx=hat.rect.centerx, posy=hat.rect.centery, hat_id=hat.hatId)
                             tobe_fallinghats.append(fakeFallingHat)
                         if hat.rect.top > scr_h:
@@ -216,9 +226,9 @@ if __name__ == '__main__':
                             # SPAWN A TINA FEY!!!!!!!!!!
                             tina = TinaFey(target=player)
                             tinacontainer.set_tina(tina)
-                            for effect in player.effects:
-                                if effect.name == 'repulsiveness':
-                                    effect.tina = tinacontainer
+                            for effect_ in player.effects:
+                                if effect_.name == 'repulsiveness':
+                                    effect_.tina = tinacontainer
                         #if random.randint(0,3) < 2: # same
                         if random.random() > 0.45:
                             if not tinacontainer.has_tina():
@@ -263,9 +273,10 @@ if __name__ == '__main__':
                         #dropped_hat = Hat(random.randint(0,scr_w), 'top')
                         dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
                         effect.process_hat_event(hatevent)
+                        if DEBUG: flags.debugwindow.log_hatevent(hatevent)
                         falling_hats.add(dropped_hat)
                         if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
-                        #del dropped_hat
+                        del dropped_hat, hatevent
                 elif event.type == GET_FPS:
                     current_fps = tiktok.get_fps()
                     print(f"FPS: {current_fps}", end='\r')

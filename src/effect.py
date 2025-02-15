@@ -9,6 +9,8 @@ import stuuf
 import sprites
 import util
 
+from settings import VERY_VERBOSE
+
 class Effect:
     " base class for status effects "
     associated_hat_id: str = 'null'
@@ -75,6 +77,8 @@ def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> E
         
         effect = effect_constructor(**args)# should perhaps be called kwargs, kwds or kws but whatever
         
+        try: entity.effects = entity.effects[1:]
+        except IndexError: pass
         entity.effects.append(effect)
     except KeyError:
         return Effect(entity)
@@ -82,7 +86,7 @@ def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> E
         return effect
 
 def get_hat(**kwargs) -> tuple[sprites.Hat, int]:
-    v = math.floor(random.gauss(hatranks_upto, hatranks_upto / 5) + rand_lower()) % len(hatByRank)
+    v = math.floor(random.gauss(hatranks_upto, hatranks_upto / 5) + rand_lower()/10) % len(hatByRank)
     hatId = hatByRank[v]
     hateventlevel = 0
     if v < math.floor(hatranks_upto):
@@ -96,10 +100,23 @@ def get_hat(**kwargs) -> tuple[sprites.Hat, int]:
 def get_hatranksupto() -> float:
     return hatranks_upto
 
+def process_aquire_hat(hat: sprites.Hat) -> int:
+    rank = hatByRank.index(hat.hatId)
+    currentrank = math.floor(hatranks_upto)
+    
+    if rank == currentrank:
+        return HatEventType.CATCH_AT
+    if rank < currentrank:
+        return HatEventType.CATCH_BEL
+    if rank > currentrank:
+        return HatEventType.ADD_ABO
+
 def process_hat_event(event_type: int) -> None:
     global hatranks_upto
     
     m = 0.0000001
+    
+    if VERY_VERBOSE: print("Hat Event:", HatEventType.toString(event_type))
     
     catch = event_type & (1 << 5)
     add   = event_type & (1 << 4)
@@ -158,4 +175,29 @@ Bit 5: use hat"""
     USE_BEL = 0b100_01
     USE_AT  = 0b100_10
     USE_ABO = 0b100_11
+    
+    @staticmethod
+    def toString(event_type: int) -> str:
+        catch = event_type & (1 << 5)
+        add   = event_type & (1 << 4)
+        use   = event_type & (1 << 3)
+        level = event_type & (0b11)
+        
+        if catch:
+            op = 'Caught Hat'
+        elif add:
+            op = 'Spawned Hat'
+        elif use:
+            op = 'Use Hat'
+        else:
+            return 'Null HatEvent'
+        
+        if level == 1:
+            lev = 'Below'
+        elif level == 2:
+            lev = 'Above'
+        else:
+            return op
+        
+        return op + ' ' + lev
     

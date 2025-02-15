@@ -234,7 +234,7 @@ class AAMI(Entity): # implements crunchable
         if self.crunched:
             self.kill("was crunched" + (f' by {self.crunchedBy}' if self.crunchedBy is not None else '') + ".")
 class TinaFey(Entity):
-    speed = (((1 + HARDNESS) / 2) / 250)
+    speed = ((1 + HARDNESS) / 2) / 200
     def __init__(self, pos=(200,200), target: Entity = None, logic=True, do_dumb_pathfinding=False):
         super(TinaFey, self).__init__(entityName='Tina Fey')
         self.target = target

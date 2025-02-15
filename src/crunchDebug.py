@@ -3,7 +3,7 @@ import pygame
 import stuuf
 from functools import wraps as _wraps
 from settings import DEBUG, VERY_VERBOSE
-from effect import get_hatranksupto
+from effect import get_hatranksupto, HatEventType
 
 def debug(func):
     @_wraps(func)
@@ -19,11 +19,13 @@ def very_verbose(func):
         else: return None 
 
 class DebugWindow(pygame.Surface):
+    hatevent: int = 0
     def __init__(self, flags: stuuf.Flags, size=(300,400), *, surf_flags=0,**kwargs):
         super().__init__(size, surf_flags | pygame.SRCALPHA)
         self.flags = flags
         self.font_size = kwargs.get('font_size', 24)
         self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
+        self.lines= self.height // self.font_size
     def renderText(self, text: str, line: int=0):
         pos = [10, 8 + self.font_size*line]
         surf = self.font.render(text, True, (0,1,2), wraplength=self.width)
@@ -35,3 +37,6 @@ class DebugWindow(pygame.Surface):
         self.renderText(f"HatranksUpto: {get_hatranksupto()}", 0)
         self.renderText("Flags:", 1)
         self.renderText(repr(self.flags), 2)
+        self.renderText(HatEventType.toString(self.hatevent), self.lines-1)
+    def log_hatevent(self, hatevent: int):
+        self.hatevent = hatevent
