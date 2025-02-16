@@ -123,7 +123,7 @@ class Hat(Entity):
     def activate_special_ability(self):
         global flags
         #if self.hatId == 'wizardry':
-        if True:
+        if True and DEBUG: # just for testing, it won't do this in production mode (__debug__ == False)
             mypos = pygame.Vector2(self.on.rect.center)
             AAMIs: pygame.sprite.Group = flags.AAMIs
             tinas: pygame.sprite.Group = flags.tinas
@@ -154,6 +154,7 @@ class Hat(Entity):
                     to_kill = closest_tina
             except AttributeError:
                 to_kill = closest_aami
+            if to_kill is closest_aami: flags.score += 1
             
             # attack `to_kill` in a cool-looking way
             print("Attacking", repr(to_kill), "in a cool-looking way")
@@ -316,14 +317,14 @@ class TinaFey(Entity):
         mv += pygame.Vector2(self.last_mv) / 2
         self.rect.move_ip(mv)
 
-class Particle(Entity):
+class Particle(pygame.sprite.Sprite):
     mv: pygame.Vector2
     pos:pygame.Vector2
     rng: random.Random
     rotation: float=00
     
     def __init__(self, texId, start_pos=(0,0), seed=None, rotspeed=1.5):
-        super().__init__(entityName='"don\'t mind me, I\'m just a particle"')
+        super().__init__()
         self.rotspeed = rotspeed
         if seed is None: self.rng = random.Random(hash(random.random()))
         else: self.rng = random.Random(seed)
@@ -344,3 +345,29 @@ class Particle(Entity):
         if VERY_VERBOSE: print("Particle pos", self.pos)
         rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
         surf.blit(srf, rect)
+
+class VisualEffect(pygame.sprite.Sprite):
+    def __repr__(self) -> str:
+        clsName = self.__class__.__name__
+        groups  = len(self.groups())
+        return f'<{clsName} VisualEffect (in {groups} groups)>'
+class LightningBolt(VisualEffect):
+    def __init__(self, target: pygame.Rect):
+        super().__init__()
+        self.surf = pygame.Surface([700, 3120], pygame.SRCALPHA)
+        self.rect = self.surf.get_rect(centerx=target.centerx, bottom=target.top)
+        self.targetRect = target
+        self.textures = [pygame.image.load(os.path.join('assets',i)).convert_alpha() \
+                         for i in ('lightning-1.png', 'lightning-2.png')]
+        self.texture_top = pygame.image.load(os.path.join('assets', 'lightning-top.png'))
+        self.update_gfx()
+    def update_gfx(self):
+        self.surf.fill((0,0,0,0))
+        self.surf.blit(random.choice(self.textures + [self.texture_top]), (0,0))
+        self.surf.blit(random.choice(self.textures), (0, 1536))
+    def update_logic(self):
+        pass
+    def update_pos(self):
+        self.update_gfx()
+        self.rect.centerx = self.target.centerx
+        self.rect.bottom = self.target.top

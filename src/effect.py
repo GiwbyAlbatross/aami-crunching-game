@@ -30,10 +30,11 @@ class Effect:
 class Speed(Effect):
     " makes you run faster! (not snake oil) "
     name: str = 'speed'
-    associated_hat_id: str = 'fiery-hat' # to be inplemented
+    associated_hat_id: str = 'fiery-hat'
     
     def apply_once(self):
         self.currently_on.speed = random.gauss(5 + self.level, 0.5)
+
 class Repulsiveness(Effect):
     " repells tinas "
     name: str = 'repulsiveness'
@@ -68,7 +69,7 @@ def rand_lower() -> float:
     return (abs(2/(a-2)) - 0.5) * 2
 
 def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> Effect:
-    args = kwargs.copy()
+    args: dict = kwargs.copy() # nessesary? probably not
     args['level'] = int((hatranks_upto % 1) * 5)
     args['entity']= entity
 

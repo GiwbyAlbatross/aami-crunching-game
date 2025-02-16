@@ -5,7 +5,7 @@ __lisence__ = 'Um the AAMI crunching game is a paid game (totally). '
 """
 TODO:
 - add status effects from hats [IN PROGRESS]
-- ~
+- REMOVE * IMPORTS TO MAKE LINTER HAPPY
 """
 
 import os
@@ -33,7 +33,7 @@ if not DEBUG:
     warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 def renderscore(surf):
-    surf.blit(pygame.font.Font(None, 128).render(scorestr % AAMIs_crunched, False, (240,240,242)), (10,10))
+    surf.blit(pygame.font.Font(None, 128).render(scorestr % flags.score, False, (240,240,242)), (10,10))
 def renderFPS(surf, fps):
     surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False, (242,240,240)), (12, scr_h - 32))
 def rose_above(a1, a2, b):
@@ -65,6 +65,8 @@ if __name__ == '__main__':
     you_won_fname = ...
     winning_music = ...
     flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False)
+    flags.running = running
+    flags.score = AAMIs_crunched
     setflags(flags) # from sprites.py
     
     if DEBUG:
@@ -177,7 +179,7 @@ if __name__ == '__main__':
                             hatevent = effect.process_aquire_hat(hat)
                             effect.add_effect_from_hat(player, hat, tina=tinacontainer, tinas=tinas).apply_once()
                             effect.process_hat_event(hatevent)
-                            flags.debugwindow.log_hatevent(hatevent)
+                            if DEBUG: flags.debugwindow.log_hatevent(hatevent)
                             fakeFallingHat = Hat(posx=hat.rect.centerx, posy=hat.rect.centery, hat_id=hat.hatId)
                             tobe_fallinghats.append(fakeFallingHat)
                         if hat.rect.top > scr_h:
@@ -201,7 +203,7 @@ if __name__ == '__main__':
                         player.surf.blit(pygame.transform.flip(player.walking1,
                                                                bool(player.direction), False), (0,0))
                     if before_AAMIs_crunched != AAMIs_crunched:
-                        print(f"AAMIs crunched: {AAMIs_crunched}                 ")
+                        print(f"AAMIs crunched: {AAMIs_crunched}")
                         if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
                             you_won_fname = os.path.join('assets', 'you_won.png')
                             if VERY_VERBOSE: print("Generated you_won_fname")
@@ -219,6 +221,7 @@ if __name__ == '__main__':
                             pygame.display.set_caption("You Won! | AAMI crunching")
                             pygame.mixer.music.play(0)
                         del before_AAMIs_crunched
+                        flags.score = AAMIs_crunched
                     
                     # spawn tina
                     if random.randint(0,tinafey_likelihood) == 1: # rare, but can happen
