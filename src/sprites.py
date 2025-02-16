@@ -256,8 +256,8 @@ class AAMI(Entity): # implements crunchable
     def __init__(self, pos=(0, scr_center[1])):
         global next_AAMI_speed
         self.mv = ((random.gauss(next_AAMI_speed, 1)),(random.gauss(0,0.256)))
-        if not flags.you_won: next_AAMI_speed += 0.1
-        else: next_AAMI_speed -= 0.003
+        #if not flags.you_won: next_AAMI_speed += 0.1
+        #else: next_AAMI_speed -= 0.003
         self.crunched = False # are we crunched yet?
         super(AAMI, self).__init__()
         self.surf = pygame.surface.Surface((160,80))
@@ -354,20 +354,26 @@ class VisualEffect(pygame.sprite.Sprite):
 class LightningBolt(VisualEffect):
     def __init__(self, target: pygame.Rect):
         super().__init__()
-        self.surf = pygame.Surface([700, 3120], pygame.SRCALPHA)
+        self.surf = pygame.Surface([172, 768], pygame.SRCALPHA)
         self.rect = self.surf.get_rect(centerx=target.centerx, bottom=target.top)
         self.targetRect = target
-        self.textures = [pygame.image.load(os.path.join('assets',i)).convert_alpha() \
+        self.textures = [pygame.transform.scale(
+                            pygame.image.load(os.path.join('assets',i)).convert_alpha(),
+                            [172, 384]) \
                          for i in ('lightning-1.png', 'lightning-2.png')]
-        self.texture_top = pygame.image.load(os.path.join('assets', 'lightning-top.png'))
+        self.texture_top = pygame.transform.scale(
+                pygame.image.load(os.path.join('assets', 'lightning-top.png')),
+                [172, 384])
         self.update_gfx()
     def update_gfx(self):
         self.surf.fill((0,0,0,0))
         self.surf.blit(random.choice(self.textures + [self.texture_top]), (0,0))
-        self.surf.blit(random.choice(self.textures), (0, 1536))
+        self.surf.blit(random.choice(self.textures), (0, 384))
     def update_logic(self):
         pass
     def update_pos(self):
         self.update_gfx()
-        self.rect.centerx = self.target.centerx
-        self.rect.bottom = self.target.top
+        self.rect.centerx = self.targetRect.centerx
+        self.rect.bottom = self.targetRect.top
+    def render(self, surf):
+        surf.blit(self.surf, self.rect)
