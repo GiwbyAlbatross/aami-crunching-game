@@ -36,6 +36,7 @@ from settings import ( # so that all of the modules share the same constants...
                       TITLE,
                       scr_w, scr_h,
                       scr_center,
+                      tinafey_likelihood,
                       SHOW_FPS,
                       DEBUG,
                       VERY_VERBOSE,
@@ -46,7 +47,7 @@ import util
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-#if DEBUG: tinafey_likelihood = 128
+if DEBUG: tinafey_likelihood = 128
 
 # dev stuff
 if not DEBUG:
@@ -324,7 +325,8 @@ if __name__ == '__main__':
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_z:
-                        player.current_hat.activate_special_ability()
+                        if not player.dead: # if the player is not dead
+                            player.current_hat.activate_special_ability()
                 """elif event.type == RESET: # doesn't happen, removed for omtimisation reasons
                     AAMIs_crunched = 1
                     flags = stuuf.Flags(running=True, you_won=False)
@@ -340,7 +342,8 @@ if __name__ == '__main__':
                     pygame.draw.rect(scr, (255,0,0), player.rect, 6)
                 pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
             currenthat.update_pos()
-            player.update_keypresses(pygame.key.get_pressed())
+            if not player.dead:
+                player.update_keypresses(pygame.key.get_pressed())
             player.update_pos()
             tina = tinacontainer.get_tina()
             if tinacontainer.has_tina():

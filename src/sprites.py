@@ -132,6 +132,13 @@ class Hat(Entity):
             closest_aami_dist: float = 42e1000000000000000000000000000000000000000000000 # basically +inf
             closest_tina: TinaFey = None
             closest_tina_dist: float = 42e1000000000000000000000000000000000000000000000 # basically +inf
+            
+            # attack main tina if present
+            if tinatainer.has_tina():
+                flags.vfx.add(LightningBolt(tinatainer.get_tina().rect, attack_center=True))
+                tinatainer.set_null_tina()
+                return
+            
             for aami in AAMIs:
                 aamipos = pygame.Vector2(aami.rect.center)
                 dist = (aamipos - mypos).length()
@@ -147,22 +154,23 @@ class Hat(Entity):
             try:
                 tinapos = pygame.Vector2(closest_tina.rect.center)
                 aamidist= (mypos - aamipos).length()
-                tinadist= (mypos - tinapos).length()
+                tinadist= (mypos - tinapos).length() * 0.98 # slight pereference to attack tinas (tinas have their distance slightly shortened)
                 if aamidist < tinadist:
                     to_kill = closest_aami
                 else:
                     to_kill = closest_tina
             except AttributeError:
                 to_kill = closest_aami
+            print("Attacking", repr(to_kill), "in a cool-looking way")
             if to_kill is closest_aami:
                 flags.score += 1
                 to_kill.crunched = True
                 to_kill.crunchedBy = 'The Ancient Magic' # oooooooooooh, implies lore!!!
                 flags.vfx.add(LightningBolt(to_kill.rect))
-            
-            # attack `to_kill` in a cool-looking way
-            print("Attacking", repr(to_kill), "in a cool-looking way")
-            to_kill.kill()
+            else:
+                # attack `to_kill` in a cool-looking way
+                flags.vfx.add(LightningBolt(to_kill.rect))
+                to_kill.kill()
         
 
 class Player(Entity):
@@ -182,7 +190,8 @@ class Player(Entity):
         # inherit from Entity stuff (i don't get it)
         super(Player, self).__init__(entityName='Noswald')
         # surfaces and images
-        self.standing = pygame.transform.flip(pygame.image.load(os.path.join('assets', 'dude_standing.png')), True, False) # do convert_alhpa on blit
+        self.standing = pygame.transform.flip(pygame.image.load(os.path.join('assets',
+                                                                             'dude_standing.png')), True, False) # do convert_alhpa on blit
         self.walking1 = pygame.image.load(os.path.join('assets', 'dude_walking-1.png'))
         self.walking2 = pygame.image.load(os.path.join('assets', 'dude_walking-2.png'))
         self.surf = pygame.surface.Surface((100,100), SRCALPHA)
@@ -201,13 +210,13 @@ class Player(Entity):
         if rect.bottom >= scr_h:
             self.rect.bottom = scr_h
         
-        # handle being crunched
+        # handle being crunched, probably should be in `update_logic`
         if self.crunched and not self.dead:
             logdeath("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'))
             if not VERY_VERBOSE: print("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'), flush=True)
             self.dead = True
     def update_keypresses(self, pressed_keys):
-        #if VERY_VERBOSE: print("updating player position")
+        if VERY_VERBOSE: print("updating player position")
         
         speed = self.speed
         
@@ -364,10 +373,13 @@ class VisualEffect(pygame.sprite.Sprite):
 class LightningBolt(VisualEffect):
     lifeTimer: int = 0
     life_expectancy = 5
-    def __init__(self, target: pygame.Rect):
+    def __init__(self, target: pygame.Rect, *, attack_center: bool=False):
         super().__init__()
         self.surf = pygame.Surface([172, 768], pygame.SRCALPHA)
-        self.rect = self.surf.get_rect(centerx=target.centerx, bottom=target.top)
+        if attack_center:
+            self.rect = self.surf.get_rect(center=target.center)
+        else:
+            self.rect = self.surf.get_rect(centerx=target.centerx, bottom=target.top)
         self.targetRect = target
         self.textures = [pygame.transform.scale(
                             pygame.image.load(os.path.join('assets',i)).convert_alpha(),
