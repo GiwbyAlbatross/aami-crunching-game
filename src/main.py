@@ -8,6 +8,8 @@ TODO:
 - REMOVE * IMPORTS TO MAKE LINTER HAPPY
 """
 
+# pylint: disable=C0413
+# pylint: disable=C0103
 import os
 import math
 import random
@@ -16,8 +18,28 @@ from pygame.locals import QUIT, KEYDOWN, USEREVENT, \
      K_ESCAPE, K_F3, K_z, \
      FULLSCREEN, SRCALPHA
 import stuuf
-from sprites import *  # all sprites that were in main.py are now in sprites.py
-from settings import * # so that all of the modules share the same constants...
+from sprites import (
+                     setflags,
+                     load_deathmessage_log,
+                     Entity,
+                     Hat,
+                     Player,
+                     AAMI,
+                     TinaFey,
+                     Particle,
+                     VisualEffect,
+                     LightningBolt,
+)
+from settings import ( # so that all of the modules share the same constants...
+                      HARDNESS,
+                      FPS,
+                      TITLE,
+                      scr_w, scr_h,
+                      scr_center,
+                      SHOW_FPS,
+                      DEBUG,
+                      VERY_VERBOSE,
+)
 import effect
 import util
 
@@ -33,18 +55,19 @@ if not DEBUG:
     warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 def renderscore(surf):
-    surf.blit(pygame.font.Font(None, 128).render(scorestr % flags.score, False, (240,240,242)), (10,10))
+    return surf.blit(pygame.font.Font(None, 128).render(scorestr % flags.score,
+                                                 False, (240,240,242)), (10,10))
 def renderFPS(surf, fps):
-    surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False, (242,240,240)), (12, scr_h - 32))
+    return surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False,
+                                                (242,240,240)), (12, scr_h - 32))
 def rose_above(a1, a2, b):
-    return (a1 <= b) and (not (a2 < b))
+    return (a1 <= b) and (not a2 < b)
 
 if __name__ == '__main__':
     pygame.init()
 
     # open a window
     scr = pygame.display.set_mode((scr_w, scr_h))
-    
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
     # and icon
@@ -177,7 +200,10 @@ if __name__ == '__main__':
                             player.current_hat = hat
                             hat.kill()
                             hatevent = effect.process_aquire_hat(hat)
-                            effect.add_effect_from_hat(player, hat, tina=tinacontainer, tinas=tinas).apply_once()
+                            effect.add_effect_from_hat(player,
+                                                       hat,
+                                                       tina=tinacontainer,
+                                                       tinas=tinas).apply_once()
                             effect.process_hat_event(hatevent)
                             if DEBUG: flags.debugwindow.log_hatevent(hatevent)
                             fakeFallingHat = Hat(posx=hat.rect.centerx, posy=hat.rect.centery, hat_id=hat.hatId)
@@ -331,7 +357,8 @@ if __name__ == '__main__':
                 scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
                 if showrects:
                     pygame.draw.line(scr, (0, 120, 240), harmless_tina.rect.center,
-                                    [harmless_tina.rect.centerx + harmless_tina.mv[0]*8, harmless_tina.rect.centery + harmless_tina.mv[1]*8],
+                                    [harmless_tina.rect.centerx + harmless_tina.mv[0]*8,
+                                     harmless_tina.rect.centery + harmless_tina.mv[1]*8],
                                     1)
                 harmless_tina.update_pos()
             for particle in particles:
