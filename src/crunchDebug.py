@@ -1,5 +1,5 @@
 " debug routines "
-# pylint: disable=
+# pylint: disable=C0103
 from functools import wraps as _wraps
 import pygame
 from pygame.locals import SRCALPHA
