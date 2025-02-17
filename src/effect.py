@@ -1,4 +1,7 @@
+"a status effect system"
 from __future__ import annotations
+
+# pylint: disable=C0103
 
 import random
 import math
@@ -13,18 +16,21 @@ from settings import VERY_VERBOSE
 
 class Effect:
     " base class for status effects "
+    # class/static attributes
     associated_hat_id: str = 'null'
     name: str
     bubble_colour: pygame.Color = pygame.Color(0,0,0)
-    
+    # instance/object attributes
     currently_on: sprites.Entity
     level: int
-    def __init__(self, entity: sprites.Entity, level: int=1, **unused):
+    def __init__(self, entity: sprites.Entity, level: int=1, **unused): # pylint: disable=W0613
         self.currently_on = entity
         self.level = level
     def apply_once(self):
+        "one-off modify the properties of self.entity"
         pass
     def apply_on_tick(self):
+        "modify the properties of self.entity, every tick"
         #self.apply_once() # [DONE] come up with better way to do that
         pass
 class Speed(Effect):
@@ -33,6 +39,7 @@ class Speed(Effect):
     associated_hat_id: str = 'fiery-hat'
     
     def apply_once(self):
+        "one-off modify the properties of self.entity"
         self.currently_on.speed = random.gauss(5 + self.level, 0.5)
 
 class Repulsiveness(Effect):
@@ -40,19 +47,24 @@ class Repulsiveness(Effect):
     name: str = 'repulsiveness'
     tina: sprites.TinaFey
     tinas: pygame.sprite.Group
-    def __init__(self, entity: sprites.Entity, level: int, tina: util.TinaContainer, tinas: pygame.sprite.Group=..., **unused):
-        super(Repulsiveness, self).__init__(entity, level)
+    def __init__(self, entity: sprites.Entity,
+                 level: int,
+                 tina: util.TinaContainer,
+                 tinas: pygame.sprite.Group=..., **unused):
+        super().__init__(entity, level)
         self.tina = tina
         self.tinas = tinas
     def _apply_to_tina(self, tina: sprites.TinaFey):
         try:
             user = self.currently_on
-            try: away_mv = pygame.Vector2(tina.rect.centerx - user.rect.centerx, tina.rect.centerx - user.rect.centerx).normalize()
+            try: away_mv = pygame.Vector2(tina.rect.centerx - user.rect.centerx,
+                                          tina.rect.centerx - user.rect.centerx).normalize()
             except ValueError: away_mv = pygame.Vector2()
             away_mv *= self.level * 3
             tina.rect.move_ip(away_mv)
         except AttributeError: pass
     def apply_on_tick(self):
+        "modify the properties of self.entity, every tick"
         tina = self.tina.get_tina()
         self._apply_to_tina(tina)
         for other_tina in self.tinas:
@@ -65,28 +77,32 @@ hatByRank: list = ['basic', 'top', 'spotty', 'repulsive-hat', 'fiery-hat', 'wiza
 hatranks_upto = 0.003 # starting value
 
 def rand_lower() -> float:
+    """a very poor attempt to generate random number that tend toward lower numbers.
+    Not really the best, I need a better way to do this"""
     a = random.random()
     return (abs(2/(a-2)) - 0.5) * 2
 
 def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> Effect:
+    "add an effect to entity based on hat. kwargs are passed to the Effect constructor"
     args: dict = kwargs.copy() # nessesary? probably not
     args['level'] = int((hatranks_upto % 1) * 5)
     args['entity']= entity
-
+    
     try:
         effect_constructor = effectByHat[hat.hatId]
         
-        effect = effect_constructor(**args)# should perhaps be called kwargs, kwds or kws but whatever
+        effect = effect_constructor(**args) # should perhaps be called kwargs, kwds or kws but whatever
         
         try: entity.effects = entity.effects[1:]
         except IndexError: pass
         entity.effects.append(effect)
     except KeyError:
-        return Effect(entity)
+        return Effect(entity) # base effect is basically a dud effect which does nothing
     else:
         return effect
 
 def get_hat(**kwargs) -> tuple[sprites.Hat, int]:
+    "select a hat based on internal module variables. Returns a tuple (Hat, hatevent)"
     v = math.floor(random.gauss(hatranks_upto, hatranks_upto / 5) + rand_lower()/10) % len(hatByRank)
     hatId = hatByRank[v]
     hateventlevel = 0
@@ -99,9 +115,11 @@ def get_hat(**kwargs) -> tuple[sprites.Hat, int]:
     return sprites.Hat(hat_id=hatId, **kwargs), HatEventType.ADD_HAT | hateventlevel
 
 def get_hatranksupto() -> float:
+    "get the value of the internal hatranks_upto variable"
     return hatranks_upto
 
 def process_aquire_hat(hat: sprites.Hat) -> int:
+    "process the aquisision of hat"
     rank = hatByRank.index(hat.hatId)
     currentrank = math.floor(hatranks_upto)
     
@@ -114,7 +132,8 @@ def process_aquire_hat(hat: sprites.Hat) -> int:
     else: return HatEventType.CATCH_HAT
 
 def process_hat_event(event_type: int) -> None:
-    global hatranks_upto
+    "process a hatevent event_type. Used to update internal module values based on the hat event"
+    global hatranks_upto # pylint: disable=W0603
     
     m = 0.0000001
     
@@ -180,6 +199,7 @@ Bit 5: use hat"""
     
     @staticmethod
     def toString(event_type: int) -> str:
+        "convert event_type to a human readable string"
         catch = event_type & (1 << 5)
         add   = event_type & (1 << 4)
         use   = event_type & (1 << 3)
