@@ -16,13 +16,14 @@ from settings import VERY_VERBOSE
 
 class Effect:
     " base class for status effects "
+    # class/static attributes
     associated_hat_id: str = 'null'
     name: str
     bubble_colour: pygame.Color = pygame.Color(0,0,0)
-    
+    # instance/object attributes
     currently_on: sprites.Entity
     level: int
-    def __init__(self, entity: sprites.Entity, level: int=1, **unused):
+    def __init__(self, entity: sprites.Entity, level: int=1, **unused): # pylint: disable=W0613
         self.currently_on = entity
         self.level = level
     def apply_once(self):
@@ -46,14 +47,18 @@ class Repulsiveness(Effect):
     name: str = 'repulsiveness'
     tina: sprites.TinaFey
     tinas: pygame.sprite.Group
-    def __init__(self, entity: sprites.Entity, level: int, tina: util.TinaContainer, tinas: pygame.sprite.Group=..., **unused):
+    def __init__(self, entity: sprites.Entity,
+                 level: int,
+                 tina: util.TinaContainer,
+                 tinas: pygame.sprite.Group=..., **unused):
         super().__init__(entity, level)
         self.tina = tina
         self.tinas = tinas
     def _apply_to_tina(self, tina: sprites.TinaFey):
         try:
             user = self.currently_on
-            try: away_mv = pygame.Vector2(tina.rect.centerx - user.rect.centerx, tina.rect.centerx - user.rect.centerx).normalize()
+            try: away_mv = pygame.Vector2(tina.rect.centerx - user.rect.centerx,
+                                          tina.rect.centerx - user.rect.centerx).normalize()
             except ValueError: away_mv = pygame.Vector2()
             away_mv *= self.level * 3
             tina.rect.move_ip(away_mv)
@@ -82,17 +87,17 @@ def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> E
     args: dict = kwargs.copy() # nessesary? probably not
     args['level'] = int((hatranks_upto % 1) * 5)
     args['entity']= entity
-
+    
     try:
         effect_constructor = effectByHat[hat.hatId]
         
-        effect = effect_constructor(**args)# should perhaps be called kwargs, kwds or kws but whatever
+        effect = effect_constructor(**args) # should perhaps be called kwargs, kwds or kws but whatever
         
         try: entity.effects = entity.effects[1:]
         except IndexError: pass
         entity.effects.append(effect)
     except KeyError:
-        return Effect(entity)
+        return Effect(entity) # base effect is basically a dud effect which does nothing
     else:
         return effect
 
@@ -128,7 +133,7 @@ def process_aquire_hat(hat: sprites.Hat) -> int:
 
 def process_hat_event(event_type: int) -> None:
     "process a hatevent event_type. Used to update internal module values based on the hat event"
-    global hatranks_upto
+    global hatranks_upto # pylint: disable=W0603
     
     m = 0.0000001
     
