@@ -24,5 +24,5 @@ while run:
     scr.fill((0,0,0))
     scr.blit(aami.surf, aami.rect)
     lightning.update_pos()
-    lightning.render(scr)
+    lightning.render(scr, True)
     pygame.display.update()

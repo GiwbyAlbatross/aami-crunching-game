@@ -1,6 +1,6 @@
 " The AAMI crunching game. "
 
-__lisence__ = 'Um the AAMI crunching game is a paid game (totally). '
+__lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of course this is a joke, but I once had intensions to sell the game
 
 """
 TODO:
@@ -114,8 +114,10 @@ if __name__ == '__main__':
     tinas = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
     particles = pygame.sprite.Group()
+    visualEffects = pygame.sprite.Group()
     flags.AAMIs = AAMIs
     flags.tinas = tinas
+    flags.vfx = visualEffects
     
     # test effects
     #if DEBUG: player.effects.append(effect.Repulsiveness(player, tina=tinacontainer, level=1, tinas=tinas))
@@ -263,6 +265,7 @@ if __name__ == '__main__':
                         particle.update_logic()
                         if not particle.is_on_screen():
                             particle.kill('fell off the screen.')
+                    for vfx in flags.vfx: vfx.update_logic()
                     if DEBUG: flags.debugwindow.update()
                 elif event.type == ADD_AAMI:
                     # add an AAMI to the collection of AAMIs
@@ -342,6 +345,9 @@ if __name__ == '__main__':
                 scr.blit(hat.surf, hat.rect)
                 if showrects:
                     pygame.draw.rect(scr, (240,1,255), hat.rect, 4)
+            for vfx in flags.vfx:
+                vfx.render(scr, flags.show_hitboxes)
+                vfx.update_pos()
             
             if VERY_VERBOSE:
                 flags.debugwindow.update()
@@ -350,7 +356,7 @@ if __name__ == '__main__':
             if flags.you_won: scr.blit(you_won, (0,0))
             if player.crunched: scr.blit(you_died, (0,0))
             if SHOW_FPS and __debug__: renderFPS(scr, current_fps)
-            if DEBUG:
+            if DEBUG: # render debug window
                 debugwindow = flags.debugwindow
                 scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
                 del debugwindow

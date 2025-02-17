@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__license__ = 'This is pretty important for the (very much) paid game "Crunch those AAMIs" so i don\'t really think you should be stealing this code.'
+__license__ = 'This is pretty important for the (very much) paid game "Crunch those AAMIs" so i don\'t really think you should be stealing this code.' # just kidding!
 
 import os
 import sys
@@ -129,9 +129,9 @@ class Hat(Entity):
             tinas: pygame.sprite.Group = flags.tinas
             tinatainer = flags.tinatainer # tinacontainer
             closest_aami: AAMI = None
-            closest_aami_dist: float = 42e10000000000000000000000000000000000000000000000000
+            closest_aami_dist: float = 42e1000000000000000000000000000000000000000000000 # basically +inf
             closest_tina: TinaFey = None
-            closest_tina_dist: float = 42e10000000000000000000000000000000000000000000000000
+            closest_tina_dist: float = 42e1000000000000000000000000000000000000000000000 # basically +inf
             for aami in AAMIs:
                 aamipos = pygame.Vector2(aami.rect.center)
                 dist = (aamipos - mypos).length()
@@ -154,7 +154,11 @@ class Hat(Entity):
                     to_kill = closest_tina
             except AttributeError:
                 to_kill = closest_aami
-            if to_kill is closest_aami: flags.score += 1
+            if to_kill is closest_aami:
+                flags.score += 1
+                to_kill.crunched = True
+                to_kill.crunchedBy = 'The Ancient Magic' # oooooooooooh, implies lore!!!
+                flags.vfx.add(LightningBolt(to_kill.rect))
             
             # attack `to_kill` in a cool-looking way
             print("Attacking", repr(to_kill), "in a cool-looking way")
@@ -351,7 +355,15 @@ class VisualEffect(pygame.sprite.Sprite):
         clsName = self.__class__.__name__
         groups  = len(self.groups())
         return f'<{clsName} VisualEffect (in {groups} groups)>'
+    def update_logic(self):
+        pass
+    def update_pos(self):
+        pass
+    def render(self, surf, show_hitboxes: bool=False):
+        pass
 class LightningBolt(VisualEffect):
+    lifeTimer: int = 0
+    life_expectancy = 5
     def __init__(self, target: pygame.Rect):
         super().__init__()
         self.surf = pygame.Surface([172, 768], pygame.SRCALPHA)
@@ -369,11 +381,16 @@ class LightningBolt(VisualEffect):
         self.surf.fill((0,0,0,0))
         self.surf.blit(random.choice(self.textures + [self.texture_top]), (0,0))
         self.surf.blit(random.choice(self.textures), (0, 384))
-    def update_logic(self):
-        pass
     def update_pos(self):
         self.update_gfx()
         self.rect.centerx = self.targetRect.centerx
         self.rect.bottom = self.targetRect.top
-    def render(self, surf):
+    def update_logic(self):
+        self.lifeTimer += 1
+        if self.lifeTimer > self.life_expectancy: self.kill()
+    def render(self, surf, show_hitboxes: bool=False):
+        colour = (240, 200, 255)
         surf.blit(self.surf, self.rect)
+        if show_hitboxes:
+            pygame.draw.circle(surf, colour, [self.targetRect.centerx, self.targetRect.top], 4)
+            pygame.draw.rect(surf, colour, self.rect, 1)

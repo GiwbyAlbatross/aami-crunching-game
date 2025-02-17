@@ -1,4 +1,4 @@
-HARDNESS = 2 # medium by default
+HARDNESS = 1 # medium by default
 TITLE = "AAMI crunching"
 scr_w = 1024
 scr_h = 768
