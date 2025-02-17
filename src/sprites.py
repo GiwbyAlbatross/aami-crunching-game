@@ -109,8 +109,12 @@ class Hat(Entity):
         if on is None: rect = self.surf.get_rect(centerx=posx, bottom=posy)
         else: rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
         self.rect = stuuf.FRect(rect)
-    def _load_hat(self, hat_id): return pygame.image.load(os.path.join('assets',
-                                                        'hats', hat_id + '.png'))
+    def _load_hat(self, hat_id):
+        if hat_id != 'null':
+            return pygame.image.load(os.path.join('assets',
+                                                  'hats', hat_id + '.png'))
+        else:
+            return pygame.Surface([100,100], SRCALPHA)
     def update_logic(self):
         " only call on falling hats "
         self.mv[1] += 1
@@ -120,9 +124,10 @@ class Hat(Entity):
             self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
             self.mv = [0,0]
         self.rect.move_ip(self.mv)
-    def activate_special_ability(self):
+    def activate_special_ability(self) -> int:
+        "activate the special ability of this hat. Returns hatevent."
         global flags
-        #if self.hatId == 'wizardry':
+        #if self.hatId == 'wizardry': # the proper mode
         if True and DEBUG: # just for testing, it won't do this in production mode (__debug__ == False)
             mypos = pygame.Vector2(self.on.rect.center)
             AAMIs: pygame.sprite.Group = flags.AAMIs
@@ -137,7 +142,7 @@ class Hat(Entity):
             if tinatainer.has_tina():
                 flags.vfx.add(LightningBolt(tinatainer.get_tina().rect, attack_center=True))
                 tinatainer.set_null_tina()
-                return
+                return effect.HatEventType.USE_ABO # attacking a tina with a wizardry hat is always the highest possible use for a hat
             
             for aami in AAMIs:
                 aamipos = pygame.Vector2(aami.rect.center)
@@ -150,7 +155,7 @@ class Hat(Entity):
                 if dist < closest_tina_dist:
                     closest_tina = tina
             try: aamipos = pygame.Vector2(closest_aami.rect.center)
-            except AttributeError: return # if there is no AAMI to attack, don't bother
+            except AttributeError: return 0 # if there is no AAMI to attack, don't bother
             try:
                 tinapos = pygame.Vector2(closest_tina.rect.center)
                 aamidist= (mypos - aamipos).length()
@@ -171,7 +176,16 @@ class Hat(Entity):
                 # attack `to_kill` in a cool-looking way
                 flags.vfx.add(LightningBolt(to_kill.rect))
                 to_kill.kill()
-        
+            
+            rank = effect.hatByRank.index(self.hatId)
+            currentrank = math.floor(effect.get_hatranksupto())
+            
+            if rank > currentrank:
+                return effect.HatEventType.USE_ABO
+            else:
+                return effect.HatEventType.USE_HAT
+            # wizardry hat is never below
+
 
 class Player(Entity):
     current_hat: Hat = None

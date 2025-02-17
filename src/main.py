@@ -40,9 +40,12 @@ from settings import ( # so that all of the modules share the same constants...
                       SHOW_FPS,
                       DEBUG,
                       VERY_VERBOSE,
+                      VERSION,
 )
 import effect
 import util
+
+print(f"AAMI Crunching Game. version: {VERSION}")
 
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
@@ -130,7 +133,8 @@ if __name__ == '__main__':
     # sprites and groups for said sprites
     player = Player()
     flags.player = player
-    currenthat: Hat = Hat('wizardry', on=player)
+    currenthat: Hat = Hat('null', on=player)
+    player.currenthat = currenthat
     tina = None
     tinacontainer = util.TinaContainer()
     flags.tinatainer = tinacontainer
@@ -165,7 +169,8 @@ if __name__ == '__main__':
                 elif event.type == GAME_TICK:
                     # do game tick stuff
                     if DEBUG: player.update_logic(particles)
-                    player.current_hat = currenthat
+                    player.currenthat = currenthat
+                    AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched
                     for hat in falling_hats:
                         hat.update_logic()
@@ -198,8 +203,9 @@ if __name__ == '__main__':
                                 currenthat.add(falling_hats)
                                 currenthat.on = None
                             """
-                            currenthat = hat
-                            currenthat.on = player
+                            if currenthat is not None:
+                                currenthat = hat
+                                currenthat.on = player
                             player.current_hat = hat
                             hat.kill()
                             hatevent = effect.process_aquire_hat(hat)
@@ -243,10 +249,11 @@ if __name__ == '__main__':
                             if VERY_VERBOSE: print("Loading music for when you win :)")
                             winning_music = not None
                             pygame.mixer.music.load(stuuf.ra)
-                        if rose_above(before_AAMIs_crunched, AAMIs_crunched, 50):
+                        if AAMIs_crunched > 50:
                             # you won
-                            print("You Won!")
-                            flags.you_won = True
+                            if not flags.you_won:
+                                print("You Won!")
+                                flags.you_won = True
                             pygame.display.set_caption("You Won! | AAMI crunching")
                             pygame.mixer.music.play(0)
                         del before_AAMIs_crunched
@@ -325,8 +332,10 @@ if __name__ == '__main__':
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_z:
-                        if not player.dead: # if the player is not dead
-                            player.current_hat.activate_special_ability()
+                        if not player.dead and player.currenthat is not None: # if the player is not dead
+                            effect.process_hat_event(
+                                player.currenthat.activate_special_ability()
+                            ) # to avoid super long line, this is on multiple lines
                 """elif event.type == RESET: # doesn't happen, removed for omtimisation reasons
                     AAMIs_crunched = 1
                     flags = stuuf.Flags(running=True, you_won=False)
@@ -335,13 +344,15 @@ if __name__ == '__main__':
             showrects = flags.show_hitboxes
             
             scr.blit(player.surf, player.rect)
-            scr.blit(currenthat.surf, currenthat.rect)
+            if currenthat is not None:
+                scr.blit(currenthat.surf, currenthat.rect)
+                currenthat.update_pos()
             if showrects:
-                pygame.draw.rect(scr, (255, 1, 200), currenthat.rect, 1)
+                if currenthat is not None:
+                    pygame.draw.rect(scr, (255, 1, 200), currenthat.rect, 1)
                 if player.crunching:
                     pygame.draw.rect(scr, (255,0,0), player.rect, 6)
                 pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
-            currenthat.update_pos()
             if not player.dead:
                 player.update_keypresses(pygame.key.get_pressed())
             player.update_pos()
