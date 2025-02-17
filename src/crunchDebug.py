@@ -12,7 +12,7 @@ def debug(func):
     @_wraps(func)
     def rapper(*args, **kwargs):
         if DEBUG: return func(*args, **kwargs)
-        else: return None
+        # return None otherwise
 def very_verbose(func):
     "decorator to make function only run if VERY_VERBOSE is true"
     @_wraps(func)
