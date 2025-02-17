@@ -7,3 +7,9 @@ This is *the* AAMI Curnching Game.
 ## Running
 From the root of the repo, run `python3 ./run.py` or `python3 -O src/main.py` if you want to do it in optimised/production mode.
 Hold C to crunch, use WASD to move.
+
+## Aim of the game
+Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and avoid Tina Fey, for she will crunch you.
+
+## Where the hell does all this weirdness come from?
+Long story short, I bunch of television ads.
