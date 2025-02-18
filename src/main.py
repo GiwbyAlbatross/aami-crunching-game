@@ -50,7 +50,7 @@ print(f"AAMI Crunching Game. version: {VERSION}")
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-if DEBUG: tinafey_likelihood = 128
+#if DEBUG: tinafey_likelihood = 128 # makes tima VERY likely to spawn, for testing features involving tina
 
 # dev stuff
 if not DEBUG:
