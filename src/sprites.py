@@ -127,8 +127,8 @@ class Hat(Entity):
     def activate_special_ability(self) -> int:
         "activate the special ability of this hat. Returns hatevent."
         global flags
-        #if self.hatId == 'wizardry': # the proper mode
-        if True and DEBUG: # just for testing, it won't do this in production mode (__debug__ == False)
+        if self.hatId == 'wizardry': # the proper mode
+        #if True and DEBUG: # just for testing, it won't do this in production mode (__debug__ == False)
             mypos = pygame.Vector2(self.on.rect.center)
             AAMIs: pygame.sprite.Group = flags.AAMIs
             tinas: pygame.sprite.Group = flags.tinas
