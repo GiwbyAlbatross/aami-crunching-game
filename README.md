@@ -10,7 +10,7 @@ Hold C to crunch, use WASD to move.
 
 ### installation/dependancies
 If you have python installed (I think it needs 3.9 or later but idk) it is pretty easy to install its dependancies: `python3 -m pip install -r requirements.txt`.
-If that fails, you may have to install pip (some python installations don't come with it) with `python3 -m ensurepip`.
+If that fails, you may have to install pip (some python installations don't come with it) with `python3 -m ensurepip`. These instructions are for UNIX. Screw microsoft.
 
 ## Aim of the game
 Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and avoid Tina Fey, for she will crunch you.
