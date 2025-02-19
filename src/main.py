@@ -323,9 +323,11 @@ if __name__ == '__main__':
                     if event.key == K_ESCAPE:
                         if flags.you_won:
                             pygame.mixer.music.stop()
+                            AAMIs_crunched = flags.score
                             tinafey_likelihood += AAMIs_crunched # gets harder
                             AAMIs_crunched -= 45 # basically resets the game
                             flags.you_won = False
+                            flags.score = AAMIs_crunched
                         else:
                             flags.running = False
                             running = 0

@@ -166,7 +166,7 @@ class Hat(Entity):
                     to_kill = closest_tina
             except AttributeError:
                 to_kill = closest_aami
-            print("Attacking", repr(to_kill), "in a cool-looking way")
+            if VERY_VERBOSE: print("Attacking", repr(to_kill), "in a cool-looking way")
             if to_kill is closest_aami:
                 flags.score += 1
                 to_kill.crunched = True
@@ -185,6 +185,7 @@ class Hat(Entity):
             else:
                 return effect.HatEventType.USE_HAT
             # wizardry hat is never below
+        return 0 # null hatevent
 
 
 class Player(Entity):

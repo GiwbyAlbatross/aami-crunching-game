@@ -2,10 +2,11 @@
 
 # all this does is put the src and assets into a tar file that can be taken anywhere and unpakced then run
 
-tarfilelocation="releases/release-$1-$2_BETA.tar.gz"
+tarfilelocation="$3releases/release-$1-$2_BETA.tar.gz" # 1 is version number {major}{minor} 2 is compact date 3 is dir to put it in
 
 echo "Removing unnessesary files (pycache, ._* files etc.)"
 
+mkdir $3releases
 mkdir /tmp/unnessesary
 mv */._* src/__pycache__ /tmp/unnessesary
 
