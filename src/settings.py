@@ -8,7 +8,7 @@ FPS = 60
 VERSION = 'v1.0.2 BETA'
 
 SHOW_FPS = True
-DEBUG = True # should be False for release versions
+DEBUG = False  # should be False for release versions
 VERY_VERBOSE = False # MUST be False in release versions
 
 

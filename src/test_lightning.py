@@ -3,8 +3,8 @@ import pygame
 import sprites
 import stuuf
 
-scr = pygame.display.set_mode([1024, 768])
-aami = sprites.AAMI((200, 800))
+scr = pygame.display.set_mode([1280, 1080])
+aami = sprites.AAMI((200, 728))
 lightning = sprites.LightningBolt(aami.rect)
 
 flags = stuuf.Flags(you_won=False)
