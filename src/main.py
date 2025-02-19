@@ -91,7 +91,7 @@ if __name__ == '__main__':
     AAMIs_crunched = 0
     you_won_fname = ...
     winning_music = ...
-    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False)
+    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0)
     flags.running = running
     flags.score = AAMIs_crunched
     setflags(flags) # from sprites.py
@@ -256,6 +256,9 @@ if __name__ == '__main__':
                                 flags.you_won = True
                             pygame.display.set_caption("You Won! | AAMI crunching")
                             pygame.mixer.music.play(0)
+                        # interestingly, just spamming Z with the wizardry hat can get more than 50 AAMIs
+                        # but you have to do some actual work (manually crunch an AAMI) in order to get the
+                        # 'You Won' screen and level up.
                         del before_AAMIs_crunched
                         flags.score = AAMIs_crunched
                     
@@ -324,10 +327,11 @@ if __name__ == '__main__':
                         if flags.you_won:
                             pygame.mixer.music.stop()
                             AAMIs_crunched = flags.score
-                            tinafey_likelihood += AAMIs_crunched # gets harder
+                            tinafey_likelihood = AAMIs_crunched + tinafey_likelihood # gets harder
                             AAMIs_crunched -= 45 # basically resets the game
                             flags.you_won = False
                             flags.score = AAMIs_crunched
+                            flags.level += 1 # level up!!! This will be used to get to higher levels in future...
                         else:
                             flags.running = False
                             running = 0
@@ -410,6 +414,10 @@ if __name__ == '__main__':
             break
     
     deathmsgs.close()
+
+    print('\n')
+    print(f"Score: {flags.score}, Level: {flags.level}")
+    print(f"So you crunched {flags.score + flags.level*45} AAMIs!")
     
     pygame.quit()
     quit()
