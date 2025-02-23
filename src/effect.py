@@ -79,6 +79,7 @@ class BaseAAMIAtrractor(Effect):
         super().__init__(entity, level)
         self.aamis = aamis
     def _apply_to_aami(self, aami: sprites.AAMI):
+        ### NEEDS WORK ##
         try:
             user = self.currently_on
             try: toward_mv = pygame.Vector2(user.rect.centerx - aami.rect.centerx,
@@ -93,9 +94,18 @@ class BaseAAMIAtrractor(Effect):
             self._apply_to_aami(aami)
 class Attractiveness(BaseAAMIAtrractor):
     name: str = 'attractiveness'
+    associated_hat: str = 'spotty'
+class Levitation(Effect):
+    name: str = 'levitiation'
+    associated_hat: str = 'top'
+    y: float
+    def apply_once(self):
+        self.y = self.currently_on.rect.centery
+    def apply_on_tick(self):
+        self.currently_on.rect.centery -= self.level * 1.5
 
-effects: dict = {'repulsiveness':Repulsiveness, 'speed':Speed, 'attractiveness':Attractiveness}
-effectByHat: dict = {'fiery-hat':Speed, 'repulsive-hat':Repulsiveness, 'spotty':Attractiveness}
+effects: dict = {'repulsiveness':Repulsiveness, 'speed':Speed, 'attractiveness':Attractiveness, 'levitation':Levitation}
+effectByHat: dict = {'fiery-hat':Speed, 'repulsive-hat':Repulsiveness, 'spotty':Attractiveness, 'top':Levitation, 'top-hat_grey':Levitation}
 
 hatByRank: list = ['basic', 'top', 'spotty', 'repulsive-hat', 'fiery-hat', 'wizardry'] # so -1 is wizardy as well
 hatranks_upto = 0.003 # starting value

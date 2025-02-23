@@ -51,7 +51,8 @@ print(f"AAMI Crunching Game. version: {VERSION}")
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
+#if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
+TEST_EFFECTS = False # this is for specific debug purposes only
 
 # dev stuff
 if not DEBUG:
@@ -149,7 +150,10 @@ if __name__ == '__main__':
     flags.vfx = visualEffects
     
     # test effects
-    if DEBUG: player.effects.append(effect.Repulsiveness(player, tina=tinacontainer, level=10, tinas=tinas))
+    if DEBUG and TEST_EFFECTS:
+         e = effect.Levitation(player, level=4)
+         e.apply_once()
+         player.effects.append(e)
     
     # you won screen
     you_won  = ...

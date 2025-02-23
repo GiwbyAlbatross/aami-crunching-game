@@ -1,11 +1,11 @@
-HARDNESS = 4 # medium by default
+HARDNESS = 1 # medium by default
 TITLE = "AAMI crunching"
 scr_w = 1024
 scr_h = 768
 scr_center = (scr_w // 2, scr_h // 2)
 FPS = 60
 
-VERSION = 'v1.0.2 BETA'
+VERSION = 'v1.0.3 ALPHA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
