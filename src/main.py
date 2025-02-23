@@ -151,7 +151,7 @@ if __name__ == '__main__':
     
     # test effects
     if DEBUG and TEST_EFFECTS:
-         e = effect.Levitation(player, level=4)
+         e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
     
@@ -255,7 +255,7 @@ if __name__ == '__main__':
                             if VERY_VERBOSE: print("Loading music for when you win :)")
                             winning_music = not None
                             pygame.mixer.music.load(stuuf.ra)
-                        if AAMIs_crunched > 50:
+                        if AAMIs_crunched >= 50:
                             # you won
                             if not flags.you_won:
                                 print("You Won!")
@@ -424,8 +424,8 @@ if __name__ == '__main__':
     deathmsgs.close()
 
     print('\n')
-    print(f"Score: {flags.score}, Level: {flags.level}")
-    print(f"So you crunched {flags.score + flags.level*45} AAMIs!")
+    print(f"Score: {flags.score}, Level: {flags.level + 1}")
+    print(f"So you crunched {flags.score + flags.level*45} AAMIs" + ('!' if flags.level >= 1 else ''))
     
     pygame.quit()
     quit()

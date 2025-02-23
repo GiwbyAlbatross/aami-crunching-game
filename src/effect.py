@@ -85,7 +85,7 @@ class BaseAAMIAtrractor(Effect):
             try: toward_mv = pygame.Vector2(user.rect.centerx - aami.rect.centerx,
                                             user.rect.centerx - aami.rect.centerx).normalize()
             except ValueError: toward_mv = pygame.Vector2()
-            toward_mv *= self.level
+            toward_mv *= self.level / 10
             aami.mv += toward_mv
         except AttributeError: pass
     def apply_on_tick(self):
