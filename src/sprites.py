@@ -231,7 +231,7 @@ class Player(Entity):
             if not VERY_VERBOSE: print("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'), flush=True)
             self.dead = True
     def update_keypresses(self, pressed_keys):
-        if VERY_VERBOSE: print("updating player position")
+        if VERY_VERBOSE and random.random() < 0.05: print("updating player position")
         
         speed = self.speed
         
@@ -283,7 +283,7 @@ class AAMI(Entity): # implements crunchable
     crunchedBy: str = None
     def __init__(self, pos=(0, scr_center[1])):
         global next_AAMI_speed
-        self.mv = ((random.gauss(next_AAMI_speed, 1)),(random.gauss(0,0.256)))
+        self.mv = pygame.Vector2((random.gauss(next_AAMI_speed, 1)),(random.gauss(0,0.256)))
         #if not flags.you_won: next_AAMI_speed += 0.1
         #else: next_AAMI_speed -= 0.003
         self.crunched = False # are we crunched yet?
@@ -302,7 +302,7 @@ class AAMI(Entity): # implements crunchable
         if self.crunched:
             self.kill("was crunched" + (f' by {self.crunchedBy}' if self.crunchedBy is not None else '') + ".")
 class TinaFey(Entity):
-    speed = ((1 + HARDNESS) / 2) / 200
+    speed = ((1 + HARDNESS) / 2) / 500
     def __init__(self, pos=(200,200), target: Entity = None, logic=True, do_dumb_pathfinding=False):
         super(TinaFey, self).__init__(entityName='Tina Fey')
         self.target = target
@@ -333,12 +333,13 @@ class TinaFey(Entity):
                 targety = targetrect.centery
                 mvx = (targetx - selfx) / speed
                 mvy = (targety - selfy) / speed
-                self.mv = [stuuf.avg(mvx, omvx), stuuf.avg(mvy, omvx)]
+                self.mv = [stuuf.avg(mvx, mvx, omvx), stuuf.avg(mvy, mvx, omvx)]
             else: self.mv = [omvx, omvy]
         else: # do dumb pathfinding
             self.dumbpathfinding.update()
             #if VERY_VERBOSE: print(self.dumbpathfinding.mv) # too much
             self.mv = self.dumbpathfinding.mv
+        self.mv = pygame.Vector2(self.mv)
         self.last_mv = self.mv
     def update_pos(self):
         mv = self.mv

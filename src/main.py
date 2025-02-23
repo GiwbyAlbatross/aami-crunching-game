@@ -41,6 +41,7 @@ from settings import ( # so that all of the modules share the same constants...
                       DEBUG,
                       VERY_VERBOSE,
                       VERSION,
+                      RENDER_DEBUG_WINDOW,
 )
 import effect
 import util
@@ -50,7 +51,7 @@ print(f"AAMI Crunching Game. version: {VERSION}")
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-#if DEBUG: tinafey_likelihood = 128 # makes tima VERY likely to spawn, for testing features involving tina
+if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
 
 # dev stuff
 if not DEBUG:
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     flags.vfx = visualEffects
     
     # test effects
-    #if DEBUG: player.effects.append(effect.Repulsiveness(player, tina=tinacontainer, level=1, tinas=tinas))
+    if DEBUG: player.effects.append(effect.Repulsiveness(player, tina=tinacontainer, level=10, tinas=tinas))
     
     # you won screen
     you_won  = ...
@@ -212,7 +213,8 @@ if __name__ == '__main__':
                             effect.add_effect_from_hat(player,
                                                        hat,
                                                        tina=tinacontainer,
-                                                       tinas=tinas).apply_once()
+                                                       tinas=tinas,
+                                                       aamis=AAMIs).apply_once()
                             effect.process_hat_event(hatevent)
                             if DEBUG: flags.debugwindow.log_hatevent(hatevent)
                             fakeFallingHat = Hat(posx=hat.rect.centerx, posy=hat.rect.centery, hat_id=hat.hatId)
@@ -266,15 +268,16 @@ if __name__ == '__main__':
                     if random.randint(0,tinafey_likelihood) == 1: # rare, but can happen
                         if not tinacontainer.has_tina():
                             # SPAWN A TINA FEY!!!!!!!!!!
-                            tina = TinaFey(target=player)
+                            tina = TinaFey(pos=[random.randint(0, scr_w), random.randint(0,scr_h)],
+                                           target=player)
                             tinacontainer.set_tina(tina)
-                            for effect_ in player.effects:
-                                if effect_.name == 'repulsiveness':
-                                    effect_.tina = tinacontainer
+                            """for effect_ in player.effects: # completely
+                                if effect_.name == 'repulsiveness': # unnessesary
+                                    effect_.tina = tinacontainer""" # now
                         #if random.randint(0,3) < 2: # same
                         if random.random() > 0.45:
                             if tinacontainer.has_tina():
-                                for i in range(random.randint(4, HARDNESS*5)):
+                                for i in range(random.randint(2, HARDNESS*2)):
                                     tinas.add(TinaFey(
                                         pos=(random.randint(0, scr_w),
                                              random.randint(0,scr_h)),
@@ -296,7 +299,7 @@ if __name__ == '__main__':
                         else:
                             # play sound effect for single tina
                             so_many_tinafeys.play()
-                        tinacontainer.set_tina(TinaFey(target=player))
+                        #tinacontainer.set_tina(TinaFey(target=player)) # THIS CAUSED MY SO MUCH COD DANG TROUBLE, so glad it's fixed
                     deathmsgs.flush() # each tick
                     for particle in particles:
                         particle.update_logic()
@@ -304,6 +307,7 @@ if __name__ == '__main__':
                             particle.kill('fell off the screen.')
                     for vfx in flags.vfx: vfx.update_logic()
                     if DEBUG: flags.debugwindow.update()
+                    current_fps = tiktok.get_fps()
                 elif event.type == ADD_AAMI:
                     # add an AAMI to the collection of AAMIs
                     new_AAMI = AAMI((0,random.randint(0,scr_h)))
@@ -320,7 +324,7 @@ if __name__ == '__main__':
                         if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
                         del dropped_hat, hatevent
                 elif event.type == GET_FPS:
-                    current_fps = tiktok.get_fps()
+                    pass
                     print(f"FPS: {current_fps}", end='\r')
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
@@ -402,8 +406,8 @@ if __name__ == '__main__':
             renderscore(scr)
             if flags.you_won: scr.blit(you_won, (0,0))
             if player.crunched: scr.blit(you_died, (0,0))
-            if SHOW_FPS and __debug__: renderFPS(scr, current_fps)
-            if DEBUG: # render debug window
+            if SHOW_FPS: renderFPS(scr, current_fps)
+            if RENDER_DEBUG_WINDOW: # render debug window
                 debugwindow = flags.debugwindow
                 scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
                 del debugwindow

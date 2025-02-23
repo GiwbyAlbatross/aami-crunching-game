@@ -12,20 +12,20 @@ import stuuf
 import sprites
 import util
 
-from settings import VERY_VERBOSE
+from settings import VERY_VERBOSE, DEBUG, HARDNESS
 
 class Effect:
     " base class for status effects "
     # class/static attributes
     associated_hat_id: str = 'null'
-    name: str
+    name: str = 'aamicrunching.effect.base'
     bubble_colour: pygame.Color = pygame.Color(0,0,0)
     # instance/object attributes
     currently_on: sprites.Entity
     level: int
     def __init__(self, entity: sprites.Entity, level: int=1, **unused): # pylint: disable=W0613
         self.currently_on = entity
-        self.level = level
+        self.level = max(1, level) # minimum effect level is 1, 0 would do nothing
     def apply_once(self):
         "one-off modify the properties of self.entity"
         pass
@@ -33,6 +33,8 @@ class Effect:
         "modify the properties of self.entity, every tick"
         #self.apply_once() # [DONE] come up with better way to do that
         pass
+    def __repr__(self) -> str:
+        return f'<Effect {self.name}, level {self.level}>'
 class Speed(Effect):
     " makes you run faster! (not snake oil) "
     name: str = 'speed'
@@ -60,18 +62,40 @@ class Repulsiveness(Effect):
             try: away_mv = pygame.Vector2(tina.rect.centerx - user.rect.centerx,
                                           tina.rect.centerx - user.rect.centerx).normalize()
             except ValueError: away_mv = pygame.Vector2()
-            away_mv *= self.level * 3
-            tina.rect.move_ip(away_mv)
+            away_mv *= (self.level * 3)
+            tina.mv += away_mv
         except AttributeError: pass
     def apply_on_tick(self):
-        "modify the properties of self.entity, every tick"
+        "repell tinas"
         tina = self.tina.get_tina()
         self._apply_to_tina(tina)
         for other_tina in self.tinas:
             self._apply_to_tina(other_tina)
+class BaseAAMIAtrractor(Effect):
+    aamis: pygame.sprite.Group
+    def __init__(self, entity: sprites.Entity,
+                 level: int,
+                 aamis: pygame.sprite.Group=..., **unused):
+        super().__init__(entity, level)
+        self.aamis = aamis
+    def _apply_to_aami(self, aami: sprites.AAMI):
+        try:
+            user = self.currently_on
+            try: toward_mv = pygame.Vector2(user.rect.centerx - aami.rect.centerx,
+                                            user.rect.centerx - aami.rect.centerx).normalize()
+            except ValueError: toward_mv = pygame.Vector2()
+            toward_mv *= self.level
+            aami.mv += toward_mv
+        except AttributeError: pass
+    def apply_on_tick(self):
+        "attract aamis"
+        for aami in self.aamis:
+            self._apply_to_aami(aami)
+class Attractiveness(BaseAAMIAtrractor):
+    name: str = 'attractiveness'
 
-effects: dict = {'repulsiveness':Repulsiveness, 'speed':Speed}
-effectByHat: dict = {'fiery-hat':Speed, 'repulsive-hat':Repulsiveness}
+effects: dict = {'repulsiveness':Repulsiveness, 'speed':Speed, 'attractiveness':Attractiveness}
+effectByHat: dict = {'fiery-hat':Speed, 'repulsive-hat':Repulsiveness, 'spotty':Attractiveness}
 
 hatByRank: list = ['basic', 'top', 'spotty', 'repulsive-hat', 'fiery-hat', 'wizardry'] # so -1 is wizardy as well
 hatranks_upto = 0.003 # starting value
@@ -93,8 +117,12 @@ def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> E
         
         effect = effect_constructor(**args) # should perhaps be called kwargs, kwds or kws but whatever
         
-        try: entity.effects = entity.effects[1:]
-        except IndexError: pass
+        try:
+            if VERY_VERBOSE: print(f"Removing status effect: {entity.effects[0]!r}")
+            entity.effects = entity.effects[1:] # remove older effects
+        except IndexError:
+            if HARDNESS > 3: entity.effects = []
+        if VERY_VERBOSE: print(f"Adding status effect: {effect!r}")
         entity.effects.append(effect)
     except KeyError:
         return Effect(entity) # base effect is basically a dud effect which does nothing
@@ -175,7 +203,9 @@ def process_hat_event(event_type: int) -> None:
     return m
 
 class HatEventType:
-    """Works in a bitwise system:
+    """Works in a bitwise system: the game.
+BushMouth fell off the bottom of the screen. :( whomp whomp. 
+HardTail died.
 Bits 0-1:
   0: generic
   1: hat level below
