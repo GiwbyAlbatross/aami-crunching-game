@@ -13,3 +13,7 @@
 # mess with git diffs an make the game slower to
 # download when it's not even nessesary to run it
 death-messages.log
+
+# random files from the audacity project I was
+# using for the Tina Fey samples
+assets/soundfx/raw/so_many_tinafeys_data/
