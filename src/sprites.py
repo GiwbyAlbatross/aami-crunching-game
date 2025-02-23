@@ -124,6 +124,10 @@ class Hat(Entity):
             self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
             self.mv = [0,0]
         self.rect.move_ip(self.mv)
+        
+        # make fiery hats catch fire at random
+        if random.random() < 0.05 and self.hatId == 'fiery-hat':
+            self.surf = self._load_hat('burning-fiery-hat')
     def activate_special_ability(self) -> int:
         "activate the special ability of this hat. Returns hatevent."
         global flags
