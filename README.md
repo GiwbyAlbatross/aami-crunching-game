@@ -17,3 +17,6 @@ Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and a
 
 ## Where the hell does all this weirdness come from?
 Long story short, I bunch of television ads.
+
+## What is this `highscore-system` branch?
+This branch adds the high score counter. Should be merged with `main`.

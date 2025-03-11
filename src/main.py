@@ -244,7 +244,7 @@ if __name__ == '__main__':
                         player.surf.blit(pygame.transform.flip(player.walking1,
                                                                bool(player.direction), False), (0,0))
                     if before_AAMIs_crunched != AAMIs_crunched:
-                        print(f"AAMIs crunched: {AAMIs_crunched}")
+                        print(f"AAMIs crunched: {AAMIs_crunched}                           ")
                         if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
                             you_won_fname = os.path.join('assets', 'you_won.png')
                             if VERY_VERBOSE: print("Generated you_won_fname")
@@ -425,7 +425,39 @@ if __name__ == '__main__':
 
     print('\n')
     print(f"Score: {flags.score}, Level: {flags.level + 1}")
-    print(f"So you crunched {flags.score + flags.level*45} AAMIs" + ('!' if flags.level >= 1 else ''))
-    
     pygame.quit()
-    quit()
+    total_score = flags.score + flags.level*45
+    print(f"So you crunched {total_score} AAMIs" + ('!' if flags.level >= 1 else ''))
+    
+    from sys import platform, exit, stdout
+    if platform == 'win32':
+        exit(0)
+
+    # store high score
+    import json
+    highscore_loc = os.path.join(os.environ.get('HOME', './'), '.aami-crunching-highscore')
+    if os.path.exists(highscore_loc):
+        with open(highscore_loc) as f:
+            try: d = json.loads(f.read())
+            except json.JSONDecodeError: d = {'score':0, 'level':0}
+        highscore = d['score'] + d['level']*45
+        setby = d.get('user', 'a random guy from northcote')
+        del d
+    else:
+        os.system('touch ' + highscore_loc)
+        highscore = -1 # can't beat that for horribleness (at the game)
+        setby = 'a random guy from northcote'
+    
+    if total_score > highscore:
+        if stdout.isatty(): print("Which is a \033[1mHIGH SCORE!\033[0m")
+        else: print("Which is a HIGH SCORE")
+        with open(highscore_loc, 'w') as f:
+            f.write(json.dumps({'score':flags.score, 'level':flags.level, 'user':os.environ.get('USER', 'guest')}))
+    else:
+        from pwd import getpwnam
+        try: setBy = getpwnam(setby).pw_gecos
+        except KeyError:
+            setBy = setby
+        print(f"The high score is {highscore}, set by {setBy}")
+
+    exit(0)
