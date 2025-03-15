@@ -16,6 +16,7 @@ from pygame.locals import USEREVENT, \
 import stuuf
 import effect
 from settings import *
+import util
 
 flags: stuuf.Flags = stuuf.Flags() # should be set to proper flags
 next_AAMI_speed = 4.8 + (HARDNESS // 2)
@@ -119,6 +120,7 @@ class Hat(Entity):
         " only call on falling hats "
         self.mv[1] += 1
     def update_pos(self):
+        shortmv = pygame.Vector2(1.24, 2.125)
         on = self.on
         if on is not None:
             self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
@@ -128,6 +130,12 @@ class Hat(Entity):
         # make fiery hats catch fire at random
         if random.random() < 0.05 and self.hatId == 'fiery-hat':
             self.surf = self._load_hat('burning-fiery-hat')
+        
+        # repulsive hats emit particles
+        if self.hatId == 'repulsive-hat':
+            # emit particle
+            particle = Particle('repulsion', self.rect.center, shortmv.rotate(random.random() * 360), random.random() * 1.5 + 0.5)
+            flags.vfx.add(particle)
     def activate_special_ability(self) -> int:
         "activate the special ability of this hat. Returns hatevent."
         global flags
@@ -278,6 +286,7 @@ class Player(Entity):
             surf.blit(self.current_hat.surf, self.current_hat.rect)
     def update_logic(self, particles):
         ### TEST PARTICLES ###
+        # which work now!!!
         super().update_logic()
         """
         if DEBUG:
@@ -307,7 +316,8 @@ class AAMI(Entity): # implements crunchable
             self.kill("was crunched" + (f' by {self.crunchedBy}' if self.crunchedBy is not None else '') + ".")
 class TinaFey(Entity):
     speed = ((1 + HARDNESS) / 2) / 500
-    def __init__(self, pos=(200,200), target: Entity = None, logic=True, do_dumb_pathfinding=False):
+    container: util.TinaContainer
+    def __init__(self, pos=(200,200), target: Entity = None, logic=True, do_dumb_pathfinding=False, container=None):
         super(TinaFey, self).__init__(entityName='Tina Fey')
         self.target = target
         self.img  = pygame.image.load(os.path.join('assets', 'TinaFey.png')).convert_alpha()
@@ -315,11 +325,25 @@ class TinaFey(Entity):
         self.rect = stuuf.FRect(self.surf.get_rect(center=pos))
         self.mv   = pygame.Vector2(int(random.uniform(0,2)), int(random.uniform(0,2)))
         self.last_mv = self.mv
-        #self.dumbpathfinding=do_dumb_pathfinding
+        self.container = container # util.TinaContainer
+        if container is not None:
+            self.container.set_tina(self)
+        if HARDNESS < 5:
+            if self.rect.colliderect(flags.player.rect):
+                if VERY_VERBOSE: print("Tina was in hitbox")
+                self.kill('tried to spawn in the player\'s hitbox, which, frankly, is unfair.')
+        else:
+            print("<TinaFey> Deal with it.")
+        #self.dumbpathfinding= do_dumb_pathfinding # old and deprecated
         self.dumbpathfinding = None
         if do_dumb_pathfinding:
             self.dumbpathfinding = stuuf.DumbPathfindingEngine(self.rect, (scr_w, scr_h))
         if logic: self.update_logic()
+    def kill(self, reason: str=''):
+        super().kill(reason)
+        if self.container is not None:
+            if VERY_VERBOSE: print("Container is not None")
+            self.container.set_null_tina()
     def update_logic(self):
         if self.dumbpathfinding is None:
             mvx=0
@@ -350,40 +374,25 @@ class TinaFey(Entity):
         mv += pygame.Vector2(self.last_mv) / 2
         self.rect.move_ip(mv)
 
-class Particle(pygame.sprite.Sprite):
-    mv: pygame.Vector2
-    pos:pygame.Vector2
-    rng: random.Random
-    rotation: float=00
-    
-    def __init__(self, texId, start_pos=(0,0), seed=None, rotspeed=1.5):
-        super().__init__()
-        self.rotspeed = rotspeed
-        if seed is None: self.rng = random.Random(hash(random.random()))
-        else: self.rng = random.Random(seed)
-        self.surf = pygame.transform.scale(pygame.image.load(os.path.join('assets', texId+'.png')), (24,24))
-        #self.rect = FRect(pygame.transform.rotate(self.surf, 45).get_rect(center=start_pos))
-        self.pos = pygame.Vector2(start_pos)
-        self.mv  = pygame.Vector2()
-        self.update_pos()
-    def update_pos(self):
-        self.rect.move_ip(self.mv)
-        self.pos = pygame.Vector2(self.rect.center)
-    def update_logic(self):
-        self.rotation *= self.rotspeed
-        self.mv.y += 1.0101
-        self.mv.rotate_ip(self.rotation/10)
-    def render(self, surf):
-        srf = pygame.transform.rotate(self.surf, self.rotation)
-        if VERY_VERBOSE: print("Particle pos", self.pos)
-        rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
-        surf.blit(srf, rect)
 
 class VisualEffect(pygame.sprite.Sprite):
     def __repr__(self) -> str:
         clsName = self.__class__.__name__
         groups  = len(self.groups())
         return f'<{clsName} VisualEffect (in {groups} groups)>'
+    def is_on_screen(self) -> bool:
+        rect = self.rect
+        if rect.bottom < 0:
+            return False
+        if rect.top > scr_h:
+            return False
+        if rect.right < 0:
+            return False
+        if rect.left > scr_w:
+            return False
+        return True
+    def kill(self, reason: str=''):
+        super().kill()
     def update_logic(self):
         pass
     def update_pos(self):
@@ -426,3 +435,31 @@ class LightningBolt(VisualEffect):
         if show_hitboxes:
             pygame.draw.circle(surf, colour, [self.targetRect.centerx, self.targetRect.top], 4)
             pygame.draw.rect(surf, colour, self.rect, 1)
+class Particle(VisualEffect):
+    mv: pygame.Vector2
+    pos:pygame.Vector2
+    rng: random.Random
+    rotation: float=00
+    
+    def __init__(self, texId, start_pos=(0,0), inital_mv=(0,0), seed=None, rotspeed=1.5):
+        super().__init__()
+        self.rotspeed = rotspeed
+        if seed is None: self.rng = random.Random(hash(random.random()))
+        else: self.rng = random.Random(seed)
+        self.surf = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'particles', texId+'.png')), (24,24))
+        self.rect = stuuf.FRect(pygame.transform.rotate(self.surf, 45).get_rect(center=start_pos))
+        self.pos = pygame.Vector2(start_pos)
+        self.mv  = pygame.Vector2(inital_mv)
+        self.update_pos()
+    def update_pos(self):
+        self.rect.move_ip(self.mv)
+        self.pos = pygame.Vector2(self.rect.center)
+    def update_logic(self):
+        self.rotation *= self.rotspeed
+        self.mv.y += 1.0101
+        self.mv.rotate_ip(self.rotation/10)
+    def render(self, surf, show_hitboxes: bool=None):
+        srf = pygame.transform.rotate(self.surf, self.rotation)
+        if VERY_VERBOSE: print("Particle pos", self.pos)
+        rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
+        surf.blit(srf, rect)

@@ -51,7 +51,7 @@ print(f"AAMI Crunching Game. version: {VERSION}")
 current_fps = FPS # update sometimes I guess
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
-#if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
+if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
 TEST_EFFECTS = False # this is for specific debug purposes only
 
 # dev stuff
@@ -66,7 +66,7 @@ def renderscore(surf):
 def renderFPS(surf, fps):
     return surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False,
                                                 (242,240,240)), (12, scr_h - 32))
-def rose_above(a1, a2, b):
+def rose_above(a1, a2, b): # been unused for ages, deprecating (removing) in next commit
     return (a1 <= b) and (not a2 < b)
 
 if __name__ == '__main__':
@@ -147,7 +147,8 @@ if __name__ == '__main__':
     visualEffects = pygame.sprite.Group()
     flags.AAMIs = AAMIs
     flags.tinas = tinas
-    flags.vfx = visualEffects
+    flags.vfx = visualEffects # which includes particles now
+
     
     # test effects
     if DEBUG and TEST_EFFECTS:
@@ -239,10 +240,7 @@ if __name__ == '__main__':
                             tinacontainer.set_null_tina()
                             tina = None # she'll respawn, don't worry
                     else: pass # there is no tina fey (only Zuhl)
-                    if flags.you_won: # do happy/walking texture on player
-                        player.surf.fill((0,0,0,0))
-                        player.surf.blit(pygame.transform.flip(player.walking1,
-                                                               bool(player.direction), False), (0,0))
+                    
                     if before_AAMIs_crunched != AAMIs_crunched:
                         print(f"AAMIs crunched: {AAMIs_crunched}")
                         if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
@@ -273,8 +271,9 @@ if __name__ == '__main__':
                         if not tinacontainer.has_tina():
                             # SPAWN A TINA FEY!!!!!!!!!!
                             tina = TinaFey(pos=[random.randint(0, scr_w), random.randint(0,scr_h)],
-                                           target=player)
-                            tinacontainer.set_tina(tina)
+                            #tina = TinaFey( # testing "tina can't spawn in player's hitbox"
+                                           target=player, container=tinacontainer)
+                            #tinacontainer.set_tina(tina) # in TinaFey.__init__ now
                             """for effect_ in player.effects: # completely
                                 if effect_.name == 'repulsiveness': # unnessesary
                                     effect_.tina = tinacontainer""" # now
@@ -357,6 +356,10 @@ if __name__ == '__main__':
             scr.fill((1,1,1))
             showrects = flags.show_hitboxes
             
+            if flags.you_won: # do happy/walking texture on player
+                player.surf.fill((0,0,0,0))
+                player.surf.blit(pygame.transform.flip(player.walking1,
+                                                       bool(player.direction), False), (0,0))
             scr.blit(player.surf, player.rect)
             if currenthat is not None:
                 scr.blit(currenthat.surf, currenthat.rect)
@@ -403,6 +406,8 @@ if __name__ == '__main__':
             for vfx in flags.vfx:
                 vfx.render(scr, flags.show_hitboxes)
                 vfx.update_pos()
+                if not vfx.is_on_screen():
+                    vfx.kill()
             
             if VERY_VERBOSE:
                 flags.debugwindow.update()
