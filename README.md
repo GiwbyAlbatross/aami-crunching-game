@@ -19,4 +19,4 @@ Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and a
 Long story short, I bunch of television ads.
 
 ## What is this `highscore-system` branch?
-This branch adds the high score counter. Should be merged with `main`.
+This branch adds the high score counter. Has be merged with `main`.
