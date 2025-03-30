@@ -408,6 +408,11 @@ if __name__ == '__main__':
                 if showrects:
                     pygame.draw.rect(scr, (0,1,245), aami.rect, 2)
                 aami.update_pos()
+            for doordacker in doordackers:
+                scr.blit(doordacker.surf, doordacker.rect)
+                if showrects:
+                    pygame.draw.rect(scr, (245,1,0), doordacker.rect, 1)
+                doordacker.update_pos()
             for harmless_tina in tinas:
                 scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
                 if showrects:
@@ -416,9 +421,11 @@ if __name__ == '__main__':
                                      harmless_tina.rect.centery + harmless_tina.mv[1]*8],
                                     1)
                 harmless_tina.update_pos()
-            for particle in particles:
+            # render snoop eventually
+            
+            """for particle in particles: # flags.vfx is now used instead
                 particle.update_pos()
-                particle.render(scr)
+                particle.render(scr)"""
             for hat in falling_hats: # also caused much trouble
                 hat.update_pos()
                 scr.blit(hat.surf, hat.rect)
