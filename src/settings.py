@@ -10,7 +10,7 @@ VERSION = 'v1.1.0'
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
 VERY_VERBOSE = False # MUST be False in release versions
-RENDER_DEBUG_WINDOW = False
+RENDER_DEBUG_WINDOW = True
 
 
 

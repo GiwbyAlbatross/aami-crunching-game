@@ -26,7 +26,9 @@ from sprites import (
                      Hat,
                      Player,
                      AAMI,
+                     DoorDacker,
                      TinaFey,
+                     SnoopDogg,
                      Particle,
                      VisualEffect,
                      LightningBolt,
@@ -67,8 +69,6 @@ def renderscore(surf):
 def renderFPS(surf, fps):
     return surf.blit(pygame.font.Font(None, 24).render(fps_frmt % fps, False,
                                                 (242,240,240)), (12, scr_h - 32))
-def rose_above(a1, a2, b): # been unused for ages, deprecating (removing) in next commit
-    return (a1 <= b) and (not a2 < b)
 
 if __name__ == '__main__':
     pygame.init()
@@ -77,9 +77,6 @@ if __name__ == '__main__':
     scr = pygame.display.set_mode((scr_w, scr_h))
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
-    # and icon
-    try: pygame.display.set_icon(pygame.image.load(os.path.join('assets', 'dude-standing.png')))
-    except pygame.error: pass # ignore any errors, this isn't essential
     # and loading screen
     try:
         scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
@@ -89,7 +86,9 @@ if __name__ == '__main__':
         print("ERROR: loading image not found. perhaps run from wrong directory.")
         print(f"Real Exception: {type(e).__name__}: {str(e)}")
         raise SystemExit(1)
-
+    # and icon
+    try: pygame.display.set_icon(pygame.image.load(os.path.join('assets', 'dude_standing.png')))
+    except pygame.error: pass # ignore any errors, this isn't essential
     # state variables
     running = 1
     AAMIs_crunched = 0
@@ -100,7 +99,7 @@ if __name__ == '__main__':
     flags.score = AAMIs_crunched
     setflags(flags) # from sprites.py
     
-    if DEBUG:
+    if DEBUG: # debug window and stuff
         import crunchDebug
         flags.debugwindow = crunchDebug.DebugWindow(flags)
 
@@ -141,8 +140,11 @@ if __name__ == '__main__':
     player.currenthat = currenthat
     tina = None
     tinacontainer = util.TinaContainer()
+    doordack_orders: list = []
     flags.tinatainer = tinacontainer
+    flags.doordack_orders = doordack_orders
     AAMIs = pygame.sprite.Group()
+    doordackers = pygame.sprite.Group()
     tinas = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
     particles = pygame.sprite.Group()
@@ -150,6 +152,7 @@ if __name__ == '__main__':
     flags.AAMIs = AAMIs
     flags.tinas = tinas
     flags.vfx = visualEffects # which includes particles now
+    flags.doordackers = doordackers
 
     
     # test effects
@@ -157,6 +160,8 @@ if __name__ == '__main__':
          e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
+    if DEBUG: # test level two (cheat to skip level 1 bc devs are lazy)
+        flags.level = 1
     
     # you won screen
     you_won  = ...
@@ -264,7 +269,7 @@ if __name__ == '__main__':
                             pygame.mixer.music.play(0)
                         # interestingly, just spamming Z with the wizardry hat can get more than 50 AAMIs
                         # but you have to do some actual work (manually crunch an AAMI) in order to get the
-                        # 'You Won' screen and level up.
+                        # 'You Won' screen and level up. BUG: spamming Z slowly increases XP, even without hat
                         del before_AAMIs_crunched
                         flags.score = AAMIs_crunched
                     
@@ -313,6 +318,14 @@ if __name__ == '__main__':
                     for vfx in flags.vfx: vfx.update_logic()
                     if DEBUG: flags.debugwindow.update()
                     current_fps = tiktok.get_fps()
+                    if flags.level == 1:
+                        # do fancy 'level 2' things
+                        if random.random() < 0.05:
+                            try:
+                                flags.doordack_orders.pop(0)
+                            except IndexError: pass
+                            else:
+                                flags.doordackers.add(DoorDacker((0, random.randint(0, scr_h))))
                 elif event.type == ADD_AAMI:
                     # add an AAMI to the collection of AAMIs
                     new_AAMI = AAMI((0,random.randint(0,scr_h)))
@@ -347,11 +360,17 @@ if __name__ == '__main__':
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_z:
-                        if not player.dead and player.currenthat is not None: # if the player is not dead
-                            effect.process_hat_event(
-                                player.currenthat.activate_special_ability()
-                            ) # to avoid super long line, this is on multiple lines
-                """elif event.type == RESET: # doesn't happen, removed for omtimisation reasons
+                        if not player.dead:
+                            if player.currenthat is not None:
+                                effect.process_hat_event(
+                                    player.currenthat.activate_special_ability()
+                                )
+                            if flags['level'] == 1:
+                                flags.doordack_orders.append('1f53') # I had this idea that the content of
+                                #                                    # this list could be unicode codepoints
+                                #                                    # for food emojis which it would
+                                #                                    # download and blit onto doordacker.surf on the fly
+                """elif event.type == RESET: # doesn't happen, removed for optimisation reasons
                     AAMIs_crunched = 1
                     flags = stuuf.Flags(running=True, you_won=False)
                     #next_AAMI_speed = 6"""
