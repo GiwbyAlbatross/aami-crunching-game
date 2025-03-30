@@ -66,7 +66,7 @@ class Entity(pygame.sprite.Sprite):
         self.entityName = kwargs.get('entityName', None)
         super(Entity, self).__init__(*args)
         self.rect = stuuf.FRect(scr_center, (10,10))
-        logdeath(self.getName(), 'joined the game.')
+        logdeath(kwargs.get('joinmsg_format', '') + self.getName(), kwargs.get('joinmsg', 'joined the game.'), '\033[0m')
     def __repr__(self) -> str:
         clsName = self.__class__.__name__
         name = self.getName()
@@ -98,6 +98,10 @@ class Entity(pygame.sprite.Sprite):
         if rect.left > scr_w:
             return False
         return True
+    def update_pos(self):
+        mv = self.mv
+        mv += pygame.Vector2(self.last_mv) / 2
+        self.rect.move_ip(mv)
 
 class Hat(Entity):
     hatId: str
@@ -369,11 +373,18 @@ class TinaFey(Entity):
             self.mv = self.dumbpathfinding.mv
         self.mv = pygame.Vector2(self.mv)
         self.last_mv = self.mv
-    def update_pos(self):
-        mv = self.mv
-        mv += pygame.Vector2(self.last_mv) / 2
-        self.rect.move_ip(mv)
-
+    
+class SnoopDogg(Entity):
+    img = pygame.image.load(os.path.join('assets', 'snoop.png'))
+    def __init__(self, pos=(300,300)):
+        super().__init__(entityName='Snoop Dogg', joinmsg=' is in da house!', joinmsg_format='\033[1m')
+        self.surf = pygame.transform.scale(self.img, (240,240))
+        self.rect = self.surf.get_rect(center=pos)
+        self.dumbpathfinding = stuuf.DumbPathfindingEngine(self.rect, (scr_w, scr_h))
+    def update_logc(self):
+        self.dumbpathfinding.update()
+        self.mv = self.dumbpathfinding.mv
+        
 
 class VisualEffect(pygame.sprite.Sprite):
     def __repr__(self) -> str:

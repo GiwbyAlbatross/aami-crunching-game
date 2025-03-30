@@ -4,8 +4,9 @@ __lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of cours
 
 """
 TODO:
-- add status effects from hats [IN PROGRESS]
-- REMOVE * IMPORTS TO MAKE LINTER HAPPY
+- implement second level [IN PROGRESS]
+- add status effects from hats [DONE]
+- REMOVE * IMPORTS TO MAKE LINTER HAPPY [DONE
 """
 
 # pylint: disable=C0413
@@ -77,7 +78,8 @@ if __name__ == '__main__':
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
     # and icon
-    #pygame.display.set_icon(pygame.image.load(os.path.join(
+    try: pygame.display.set_icon(pygame.image.load(os.path.join('assets', 'dude-standing.png')))
+    except pygame.error: pass # ignore any errors, this isn't essential
     # and loading screen
     try:
         scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
