@@ -58,6 +58,7 @@ class Entity(pygame.sprite.Sprite):
     canCrunchTina: bool = False
     rect: pygame.Rect
     surf: pygame.Surface
+    last_mv: pygame.math.Vector2 = pygame.Vector2(0)
     def __init__(self, *args, **kwargs):
         self.effects = []
         global next_entityID
@@ -296,7 +297,7 @@ class Player(Entity):
         if DEBUG:
             particles.add(Particle('dude_walking-2', self.rect.center))
         """
-class AAMI(Entity): # implements crunchable
+class AAMI(Entity): # implements ICrunchable
     crunchedBy: str = None
     def __init__(self, pos=(0, scr_center[1])):
         global next_AAMI_speed
@@ -307,10 +308,8 @@ class AAMI(Entity): # implements crunchable
         super(AAMI, self).__init__()
         self.surf = pygame.surface.Surface((160,80))
         self.img = pygame.image.load(os.path.join('assets', 'AAMI.png')).convert()
-        self.rect = stuuf.FRect(self.surf.get_rect(center=pos))
+        self.rect = stuuf.FRect(self.surf.get_rect(bottom_right=pos))
         self.surf.blit(pygame.transform.scale(self.img, (160,80)), (0,0))
-    def update_pos(self):
-        self.rect.move_ip(self.mv)
     def update_logic(self):
         rect = self.rect
         if (rect.right <= 0) or (rect.left > scr_w) or \
@@ -318,6 +317,20 @@ class AAMI(Entity): # implements crunchable
             self.kill("fell off the screen.")
         if self.crunched:
             self.kill("was crunched" + (f' by {self.crunchedBy}' if self.crunchedBy is not None else '') + ".")
+class DoorDacker(Entity): # implements ISmackable
+    bike = pygame.image.load(os.path.join('assets', 'doordack_bike-only.png'))
+    img  = pygame.image.load(os.path.join('assets', 'doordack_bike.png'))
+    hand = pygame.image.load(os.path.join('assets', 'doordack_hand-only.png')) # the hand from the 'smash it' ads
+    def __init__(self, pos=(0,0)):
+        super().__init__()
+        self.surf = pygame.transform.scale(random.choice([self.bike, self.bike, self.img]), (160, 80))
+        self.rect = self.surf.get_rect(bottom_right=pos)
+        self.mv = pygame.Vector2((random.gauss(5, 1)random.gauss(0,0.256)))
+     def update_logic(self):
+        rect = self.rect
+        if (rect.right <= 0) or (rect.left > scr_w) or \
+           (rect.top > scr_h) or (rect.bottom <= 0):
+            self.kill("fell off the screen.")
 class TinaFey(Entity):
     speed = ((1 + HARDNESS) / 2) / 500
     container: util.TinaContainer
