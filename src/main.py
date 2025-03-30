@@ -423,7 +423,7 @@ if __name__ == '__main__':
                 harmless_tina.update_pos()
             # render snoop eventually
             
-            """for particle in particles: # flags.vfx is now used instead
+            """for particle in particles: # flags.vfx is now used instead 
                 particle.update_pos()
                 particle.render(scr)"""
             for hat in falling_hats: # also caused much trouble
