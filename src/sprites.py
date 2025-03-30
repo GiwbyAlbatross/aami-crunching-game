@@ -323,7 +323,7 @@ class DoorDacker(Entity): # implements ISmackable
     hand = pygame.image.load(os.path.join('assets', 'doordack_hand-only.png')) # the hand from the 'smash it' ads
     def __init__(self, pos=(0,0)):
         super().__init__()
-        self.surf = pygame.transform.scale(random.choice([self.bike, self.bike, self.img]), (160, 80))
+        self.surf = random.choice([self.bike, self.bike, self.img])
         self.rect = self.surf.get_rect(bottomright=pos)
         self.mv = pygame.Vector2((random.gauss(5, 1), random.gauss(0,0.256)))
     def update_logic(self):

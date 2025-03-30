@@ -160,8 +160,8 @@ if __name__ == '__main__':
          e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
-    if DEBUG: # test level two (cheat to skip level 1 bc devs are lazy)
-        flags.level = 1
+    #if DEBUG: # test level two (cheat to skip level 1 bc devs are lazy)
+    #    flags.level = 1
     
     # you won screen
     you_won  = ...
@@ -423,7 +423,7 @@ if __name__ == '__main__':
                 harmless_tina.update_pos()
             # render snoop eventually
             
-            """for particle in particles: # flags.vfx is now used instead 
+            """for particle in particles: # flags.vfx is now used instead
                 particle.update_pos()
                 particle.render(scr)"""
             for hat in falling_hats: # also caused much trouble
