@@ -146,6 +146,7 @@ if __name__ == '__main__':
     AAMIs = pygame.sprite.Group()
     doordackers = pygame.sprite.Group()
     tinas = pygame.sprite.Group()
+    snoopDoggs = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
     particles = pygame.sprite.Group()
     visualEffects = pygame.sprite.Group()
@@ -153,6 +154,7 @@ if __name__ == '__main__':
     flags.tinas = tinas
     flags.vfx = visualEffects # which includes particles now
     flags.doordackers = doordackers
+    flags.snoops = snoopDoggs
 
     
     # test effects
@@ -160,7 +162,7 @@ if __name__ == '__main__':
          e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
-    #if DEBUG: # test level two (cheat to skip level 1 bc devs are lazy)
+    #if DEBUG: # test level two (cheat to skip level 1 bc us devs are lazy)
     #    flags.level = 1
     
     # you won screen
@@ -325,7 +327,10 @@ if __name__ == '__main__':
                                 flags.doordack_orders.pop(0)
                             except IndexError: pass
                             else:
-                                flags.doordackers.add(DoorDacker((0, random.randint(0, scr_h))))
+                                if random.random() < 0.98:
+                                    flags.doordackers.add(DoorDacker((0, random.randint(0, scr_h))))
+                                else:
+                                    flags.snoops.add(SnoopDogg((random.randint(0, scr_w), random.randint(0, scr_h))))
                 elif event.type == ADD_AAMI:
                     # add an AAMI to the collection of AAMIs
                     new_AAMI = AAMI((0,random.randint(0,scr_h)))
@@ -365,15 +370,11 @@ if __name__ == '__main__':
                                 effect.process_hat_event(
                                     player.currenthat.activate_special_ability()
                                 )
-                            if flags['level'] == 1:
+                            if flags['level'] >= 1:
                                 flags.doordack_orders.append('1f53') # I had this idea that the content of
                                 #                                    # this list could be unicode codepoints
                                 #                                    # for food emojis which it would
                                 #                                    # download and blit onto doordacker.surf on the fly
-                """elif event.type == RESET: # doesn't happen, removed for optimisation reasons
-                    AAMIs_crunched = 1
-                    flags = stuuf.Flags(running=True, you_won=False)
-                    #next_AAMI_speed = 6"""
             scr.fill((1,1,1))
             showrects = flags.show_hitboxes
             
@@ -423,6 +424,11 @@ if __name__ == '__main__':
                 harmless_tina.update_pos()
             # render snoop eventually
             
+            for snoop in flags.snoops:
+                scr.blit(snoop.surf, snoop.rect)
+                if showrects:
+                    pygame.draw.rect(scr, (96, 1, 128), snoop.rect, 4)
+
             """for particle in particles: # flags.vfx is now used instead
                 particle.update_pos()
                 particle.render(scr)"""
