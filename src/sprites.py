@@ -74,6 +74,8 @@ class Entity(pygame.sprite.Sprite):
         nGroups = len(self.groups())
         return f"<{clsName} Entity \"{name}\" (in {nGroups} groups)>"
     def update_logic(self):
+        if not isinstance(self, Player) and DEBUG:
+            print("WARNING: Using inherited update_logic from base Entity class in", repr(self))
         assert self.rect is not None
         for effect_ in self.effects:
             effect_.apply_on_tick()
@@ -389,14 +391,16 @@ class TinaFey(Entity):
     
 class SnoopDogg(Entity):
     img = pygame.image.load(os.path.join('assets', 'snoop.png'))
+    mv: pygame.math.Vector2 = pygame.Vector2(0.1)
     def __init__(self, pos=(300,300)):
         super().__init__(entityName='Snoop Dogg', joinmsg=' is in da house!', joinmsg_format='\033[1m')
         self.surf = pygame.transform.scale(self.img, (240,240))
-        self.rect = self.surf.get_rect(center=pos)
-        self.dumbpathfinding = stuuf.DumbPathfindingEngine(self.rect, (scr_w, scr_h))
-    def update_logc(self):
-        self.dumbpathfinding.update()
-        self.mv = self.dumbpathfinding.mv
+        self.rect = stuuf.FRect(self.surf.get_rect(center=pos))
+        self.dumbpathfinding = stuuf.DumbPathfindingEngine(self.rect, (scr_w, scr_h), 0.1)
+        self.dumbpathfinding.cares_about_distance = 0.8
+    def update_logic(self):
+        self.last_mv = self.mv / 3
+        self.mv = self.mv.lerp(self.dumbpathfinding.update(), 0.6)
         
 
 class VisualEffect(pygame.sprite.Sprite):
