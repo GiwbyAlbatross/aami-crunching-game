@@ -162,8 +162,8 @@ if __name__ == '__main__':
          e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
-    #if DEBUG: # test level two (cheat to skip level 1 bc us devs are lazy)
-    #    flags.level = 1
+    if DEBUG: # test level two (cheat to skip level 1 bc us devs are lazy)
+        flags.level = 1
     
     # you won screen
     you_won  = ...
@@ -320,7 +320,7 @@ if __name__ == '__main__':
                     for vfx in flags.vfx: vfx.update_logic()
                     if DEBUG: flags.debugwindow.update()
                     current_fps = tiktok.get_fps()
-                    if flags.level == 1:
+                    if flags.level >= 1:
                         # do fancy 'level 2' things
                         if random.random() < 0.05:
                             try:
@@ -331,6 +331,9 @@ if __name__ == '__main__':
                                     flags.doordackers.add(DoorDacker((0, random.randint(0, scr_h))))
                                 else:
                                     flags.snoops.add(SnoopDogg((random.randint(0, scr_w), random.randint(0, scr_h))))
+                    # process snoops, do this after snoops are initially added, to give them one tick update before rendering
+                    for snoop in flags.snoops:
+                        snoop.update_logic()
                 elif event.type == ADD_AAMI:
                     # add an AAMI to the collection of AAMIs
                     new_AAMI = AAMI((0,random.randint(0,scr_h)))
@@ -414,6 +417,8 @@ if __name__ == '__main__':
                 if showrects:
                     pygame.draw.rect(scr, (245,1,0), doordacker.rect, 1)
                 doordacker.update_pos()
+                if not doordacker.is_on_screen():
+                    doordacker.kill("(a doordacker) fell of the screen")
             for harmless_tina in tinas:
                 scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
                 if showrects:
@@ -422,12 +427,17 @@ if __name__ == '__main__':
                                      harmless_tina.rect.centery + harmless_tina.mv[1]*8],
                                     1)
                 harmless_tina.update_pos()
-            # render snoop eventually
             
+            # render snoop
             for snoop in flags.snoops:
+                snoop.update_pos()
                 scr.blit(snoop.surf, snoop.rect)
                 if showrects:
                     pygame.draw.rect(scr, (96, 1, 128), snoop.rect, 4)
+                    pygame.draw.line(scr, (1, 128, 96), snoop.rect.center,
+                                    [snoop.rect.centerx + snoop.mv[0]*8,
+                                     snoop.rect.centery + snoop.mv[1]*8],
+                                    1)
 
             """for particle in particles: # flags.vfx is now used instead
                 particle.update_pos()
