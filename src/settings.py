@@ -5,7 +5,7 @@ scr_h = 768
 scr_center = (scr_w // 2, scr_h // 2)
 FPS = 60
 
-VERSION = 'v1.1.0'
+VERSION = 'v1.2.0-ALPHA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
