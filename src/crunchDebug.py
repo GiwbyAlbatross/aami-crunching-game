@@ -27,7 +27,7 @@ class DebugWindow(pygame.Surface):
 
     # subclasses can override the update method to show whatever info
     hatevent: int = 0
-    def __init__(self, flags: stuuf.Flags, size=(300,400), *, surf_flags=0,**kwargs):
+    def __init__(self, flags: stuuf.Flags, size=(300,400), *, surf_flags=0, **kwargs):
         super().__init__(size, surf_flags | SRCALPHA)
         self.flags = flags
         self.font_size = kwargs.get('font_size', 24)
@@ -49,6 +49,8 @@ class DebugWindow(pygame.Surface):
         try: self.renderText(repr(self.flags.player.effects[-1]), 2)
         except IndexError: self.renderText('No status effects', 2)
         self.renderText(f"Number of status effects: {len(self.flags.player.effects)}", 3)
+        self.renderText(f"Number of doordack orders: {len(self.flags.doordack_orders)}", 4)
+        self.renderText(f"Level: {self.flags.level}", 5)
         #self.renderText("Flags:", 1)
         #self.renderText(repr(self.flags), 2)
         self.renderText(HatEventType.toString(self.hatevent), self.lines-1)

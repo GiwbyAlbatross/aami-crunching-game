@@ -56,10 +56,10 @@ def avg(*values):
 # this is based on minecraft's system for the exact same purpose
 class EntityNameGenerator:
     "public class EntityNameGenerator"
-    prefixes = ("slim far river silly fat thin fish bat dark oak sly bush zen bark cry slack soup grim hook "\
-            + "dirt mud sad hard crook sneak stik weird fire soot soft rough cling sear").split(' ') # private String[] prefixes = {...};
-    suffixes = ("fox tail jaw whisper twig root finder nose brow blade fry seek wart tooth foot leaf stone "\
-            + "fall face tounge voice lip mouth snail toe ear hair beard shirt fist").split(' ') # private String[] suffixes = {...};
+    prefixes = ("slim far river silly fat thin fish bat dark oak sly bush zen bark cry slack soup grim hook stink "\
+            + "dirt mud sad hard crook sneak stick weird fire soot soft rough cling sear").split(' ') # private String[] prefixes = {...};
+    suffixes = ("fox tail jaw whisper twig root finder nose brow blade fry seek wart tooth foot leaf stone launcher "\
+            + "fall face tounge voice lip mouth snail toe ear hair beard shirt fist sip").split(' ') # private String[] suffixes = {...};
     @classmethod
     def create_entity_name(cls, entityId: int) -> str:
         "public static String create_entity_name(long entityId)"
@@ -73,10 +73,10 @@ class DumbPathfindingEngine:
     "public class DumbPathfindingEngine implements IPathfindingEngine"
     def __init__(self, rect, scr_size=(1024,768), speed=1):
         self.scr_size = scr_size
-        self.euclid_scr_size = sqrt(scr_size[0]**2 + scr_size[1]**2)
-        self.speed = speed
+        #self.euclid_scr_size = sqrt(scr_size[0]**2 + scr_size[1]**2)
+        self._speed = 1/speed
         self.target= (0,0)
-        self._mv = [0,0]
+        self._mv = [0.003,0.003]
         self.rect = rect
         self.pos = rect.center
     @property
@@ -85,17 +85,21 @@ class DumbPathfindingEngine:
         return pygame.Vector2([int(m*self.precision)/self.precision for m in v][:2])
     @property
     def fmv(self): return pygame.Vector2(self._mv[:2])
+    @property
+    def speed(self): return 1/self._speed
+    @speed.setter
+    def speed(self, value: float): self._speed = 1/value
     def _generate_target_coords(self):
         " private array<int> _generate_target_coords() "
         return [random.randint(-100, self.scr_size[0] + 100), random.randint(-100,self.scr_size[1] + 100)]
     def update(self):
         self.pos = self.rect.center
         rawmv = [(self.target[0] - self.pos[0]), (self.target[1] - self.pos[1])]
-        speed_factor = 50 * self.speed
+        speed_factor = 50 * self._speed
         rawmv = [m / speed_factor for m in rawmv]
         self._mv = rawmv
         self.pos = self.rect.center
-        if self.rect.collidepoint(self.target) or (self.fmv.length() < 1.41):
+        if self.rect.collidepoint(self.target) or (self.fmv.length() < (1.41 * self.speed)):
             self.target = self._generate_target_coords()
         #print(rawmv)
         return self.mv
