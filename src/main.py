@@ -1,6 +1,6 @@
 " The AAMI crunching game. "
 
-__lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of course this is a joke, but I once had intensions to sell the game
+__lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of course this is a joke, but I once had intenions to sell the game
 
 """
 TODO:
@@ -148,7 +148,9 @@ if __name__ == '__main__':
     tinas = pygame.sprite.Group()
     snoopDoggs = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
-    particles = pygame.sprite.Group()
+    #particles = pygame.sprite.Group() # old api which shouldn't be used,
+    #                                  # removed to see if it's still being
+    #                                  # used and to save memory space
     visualEffects = pygame.sprite.Group()
     flags.AAMIs = AAMIs
     flags.tinas = tinas
@@ -162,8 +164,6 @@ if __name__ == '__main__':
          e = effect.BaseAAMIAtrractor(player, level=1, aamis=AAMIs)
          e.apply_once()
          player.effects.append(e)
-    if DEBUG: # test level two (cheat to skip level 1 bc us devs are lazy)
-        flags.level = 1
     
     # you won screen
     you_won  = ...
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                     flags.running = False
                 elif event.type == GAME_TICK:
                     # do game tick stuff
-                    if DEBUG: player.update_logic(particles)
+                    if DEBUG: player.update_logic(flags.vfx)
                     player.currenthat = currenthat
                     AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched
@@ -313,11 +313,16 @@ if __name__ == '__main__':
                             so_many_tinafeys.play()
                         #tinacontainer.set_tina(TinaFey(target=player)) # THIS CAUSED MY SO MUCH COD DANG TROUBLE, so glad it's fixed
                     deathmsgs.flush() # each tick
-                    for particle in particles:
+                    """for particle in particles:
                         particle.update_logic()
                         if not particle.is_on_screen():
-                            particle.kill('fell off the screen.')
-                    for vfx in flags.vfx: vfx.update_logic()
+                            particle.kill('fell off the screen.')"""
+                    for vfx in flags.vfx:
+                        vfx.update_logic()
+                        if not vfx.is_on_screen():
+                            vfx.kill()
+                    if random.random() > 0.9:
+                        flags.vfx.add(Particle('bread', start_pos=(random.randint(-25, scr_w), -25), size=(44,44)))
                     if DEBUG: flags.debugwindow.update()
                     current_fps = tiktok.get_fps()
                     if flags.level >= 1:
@@ -450,8 +455,6 @@ if __name__ == '__main__':
             for vfx in flags.vfx:
                 vfx.render(scr, flags.show_hitboxes)
                 vfx.update_pos()
-                if not vfx.is_on_screen():
-                    vfx.kill()
             
             if VERY_VERBOSE:
                 flags.debugwindow.update()
