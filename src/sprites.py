@@ -141,7 +141,12 @@ class Hat(Entity):
         # repulsive hats emit particles
         if self.hatId == 'repulsive-hat':
             # emit particle
-            particle = Particle('repulsion', self.rect.center, shortmv.rotate(random.random() * 360), random.random() * 1.5 + 0.5)
+            angle = random.random() * 360
+            particle = Particle('repulsion',
+                                self.rect.center,
+                                shortmv.rotate(angle),
+                                rotspeed=random.random() * 1.5 + 0.5,
+                                start_angle=random.random()*45 + angle)
             flags.vfx.add(particle)
     def activate_special_ability(self) -> int:
         "activate the special ability of this hat. Returns hatevent."
@@ -208,7 +213,7 @@ class Hat(Entity):
 
 
 class Player(Entity):
-    current_hat: Hat = None
+    currenthat: Hat = None
     crunchedBy: str = None
     speed: int = 5
     def __init__(self, pos=scr_center, hat=None):
@@ -295,10 +300,8 @@ class Player(Entity):
         ### TEST PARTICLES ###
         # which work now!!!
         super().update_logic()
-        """
-        if DEBUG:
-            particles.add(Particle('dude_walking-2', self.rect.center))
-        """
+        """if DEBUG:
+            flags.vfx.add(Particle('bread', self.rect.center))"""
 class AAMI(Entity): # implements ICrunchable
     crunchedBy: str = None
     def __init__(self, pos=(0, scr_center[1])):
@@ -429,7 +432,7 @@ class VisualEffect(pygame.sprite.Sprite):
         pass
 class LightningBolt(VisualEffect):
     lifeTimer: int = 0
-    life_expectancy = 5
+    life_expectancy: int = 5
     def __init__(self, target: pygame.Rect, *, attack_center: bool=False):
         super().__init__()
         self.surf = pygame.Surface([172, 768], pygame.SRCALPHA)
@@ -463,29 +466,32 @@ class LightningBolt(VisualEffect):
         if show_hitboxes:
             pygame.draw.circle(surf, colour, [self.targetRect.centerx, self.targetRect.top], 4)
             pygame.draw.rect(surf, colour, self.rect, 1)
+
 class Particle(VisualEffect):
     mv: pygame.Vector2
     pos:pygame.Vector2
     rng: random.Random
     rotation: float=00
-    
-    def __init__(self, texId, start_pos=(0,0), inital_mv=(0,0), seed=None, rotspeed=1.5):
+    def __init__(self, texId, start_pos=(0,0), inital_mv=(0,0), seed=None, rotspeed=0, start_angle=0, size=(24,24)):
         super().__init__()
         self.rotspeed = rotspeed
         if seed is None: self.rng = random.Random(hash(random.random()))
         else: self.rng = random.Random(seed)
-        self.surf = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'particles', texId+'.png')), (24,24))
-        self.rect = stuuf.FRect(pygame.transform.rotate(self.surf, 45).get_rect(center=start_pos))
+        self.img = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'particles', texId+'.png')), size)
+        self.rect= pygame.FRect(start_pos, size)
         self.pos = pygame.Vector2(start_pos)
+        self.rotation = start_angle
         self.mv  = pygame.Vector2(inital_mv)
         self.update_pos()
     def update_pos(self):
         self.rect.move_ip(self.mv)
         self.pos = pygame.Vector2(self.rect.center)
+        self.surf = pygame.transform.rotate(self.img, self.rotation)
+        self.rect = stuuf.FRect(self.surf.get_rect(topleft=self.rect.topleft))
     def update_logic(self):
-        self.rotation *= self.rotspeed
+        self.rotation += self.rotspeed
         self.mv.y += 1.0101
-        self.mv.rotate_ip(self.rotation/10)
+        #self.mv.rotate_ip(self.rotation/10) # this completely breaks it idk why it was ever here...
     def render(self, surf, show_hitboxes: bool=None):
         srf = pygame.transform.rotate(self.surf, self.rotation)
         if VERY_VERBOSE: print("Particle pos", self.pos)
