@@ -139,7 +139,7 @@ class Hat(Entity):
             self.surf = self._load_hat('burning-fiery-hat')
         
         # repulsive hats emit particles
-        if self.hatId == 'repulsive-hat':
+        if self.hatId == 'repulsive-hat' and random.random() < GFX_MODE/2:
             # emit particle
             angle = random.random() * 360
             particle = Particle('repulsion',
@@ -454,10 +454,11 @@ class LightningBolt(VisualEffect):
         self.surf.blit(random.choice(self.textures + [self.texture_top]), (0,0))
         self.surf.blit(random.choice(self.textures), (0, 384))
     def update_pos(self):
-        self.update_gfx()
+        if GFX_MODE >= 2: self.update_gfx()
         self.rect.centerx = self.targetRect.centerx
         self.rect.bottom = self.targetRect.top
     def update_logic(self):
+        self.update_gfx()
         self.lifeTimer += 1
         if self.lifeTimer > self.life_expectancy: self.kill()
     def render(self, surf, show_hitboxes: bool=False):
