@@ -1,6 +1,6 @@
 # The AAMI Crunching Game
 <center>
- <img src='random promotional images/development of the tina fey is ongoing, this might be too many tinas.png' width='80%'/>
+ <img src='img/development of the tina fey is ongoing, this might be too many tinas.png' width='80%'/>
 </center>
 This is *the* AAMI Curnching Game.
 

@@ -4,6 +4,7 @@ scr_w = 1024
 scr_h = 768
 scr_center = (scr_w // 2, scr_h // 2)
 FPS = 60
+GFX_MODE = 4 # determines how graphics-intensive this should be
 
 VERSION = 'v1.2.0-ALPHA'
 
