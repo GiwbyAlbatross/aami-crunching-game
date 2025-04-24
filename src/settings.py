@@ -6,7 +6,7 @@ scr_center = (scr_w // 2, scr_h // 2)
 FPS = 60
 GFX_MODE = 4 # determines how graphics-intensive this should be
 
-VERSION = 'v1.2.0-dev'
+VERSION = 'v1.2.0-ALPHA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
