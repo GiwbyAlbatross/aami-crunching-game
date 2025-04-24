@@ -6,7 +6,7 @@ This is *the* AAMI Curnching Game.
 
 ## Running
 From the root of the repo, run `python3 ./run.py` or `python3 -O src/main.py` if you want to do it in optimised/production mode.
-Hold C to crunch, use WASD to move.
+Hold C to crunch, use WASD to move. Z activates your hat's special ability and, in the second level, orders doorddack (smack it) which summons a doordacker and has a small chance of summoning snoop.
 
 ### installation/dependancies
 If you have python installed (I think it needs 3.9 or later but idk) it is pretty easy to install its dependancies: `python3 -m pip install -r requirements.txt`.
