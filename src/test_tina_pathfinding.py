@@ -1,5 +1,5 @@
 import stuuf
-from sprites import TinaFey, Entity
+from sprites import TinaFey, Entity, SnoopDogg
 from settings import *
 
 import pygame
@@ -14,7 +14,10 @@ fps = 60
 clk = pygame.time.Clock()
 
 entity = Entity()
-tina = TinaFey(do_dumb_pathfinding=True)
+tina = SnoopDogg() # oh dear.
+
+been = pygame.Surface((scr_w, scr_h), pygame.SRCALPHA)
+been.fill([0,0,0,0])
 
 pathfinder = tina.dumbpathfinding
 pathfinder.target = pathfinder._generate_target_coords()
@@ -32,14 +35,16 @@ while run:
     if keys[K_SPACE]:
         tina.update_pos()
     if keys[K_TAB]:
-        print("Updating logic")
+        print("\nUpdating logic")
         tina.update_logic()
         tina.update_pos()
+    scr.blit(been, (0,0))
     scr.blit(tina.surf, tina.rect)
     pygame.draw.circle(scr, (250,25,0), pathfinder.target, 8)
-    print(pathfinder.mv, tina.mv)
+    pygame.draw.circle(been, (1,1,1), tina.rect.center, 3)
+    print(pathfinder.mv, tina.mv, end='\r')
     pygame.draw.rect(scr, (1,0,240), tina.rect, 5)
-    pygame.draw.aaline(scr, (1,242,2), tina.rect.center,
+    pygame.draw.aaline(scr, (255,24,2), tina.rect.center,
         (tina.rect.centerx + tina.mv[0]*mvlen, tina.rect.centery + tina.mv[1]*mvlen), 8)
     pygame.display.flip()
 

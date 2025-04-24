@@ -58,6 +58,7 @@ class Entity(pygame.sprite.Sprite):
     canCrunchTina: bool = False
     rect: pygame.Rect
     surf: pygame.Surface
+    last_mv: pygame.math.Vector2 = pygame.Vector2(0)
     def __init__(self, *args, **kwargs):
         self.effects = []
         global next_entityID
@@ -66,13 +67,15 @@ class Entity(pygame.sprite.Sprite):
         self.entityName = kwargs.get('entityName', None)
         super(Entity, self).__init__(*args)
         self.rect = stuuf.FRect(scr_center, (10,10))
-        logdeath(self.getName(), 'joined the game.')
+        logdeath(kwargs.get('joinmsg_format', '') + self.getName(), kwargs.get('joinmsg', 'joined the game.'), '\033[0m')
     def __repr__(self) -> str:
         clsName = self.__class__.__name__
         name = self.getName()
         nGroups = len(self.groups())
         return f"<{clsName} Entity \"{name}\" (in {nGroups} groups)>"
     def update_logic(self):
+        if not isinstance(self, Player) and DEBUG:
+            print("WARNING: Using inherited update_logic from base Entity class in", repr(self))
         assert self.rect is not None
         for effect_ in self.effects:
             effect_.apply_on_tick()
@@ -98,6 +101,10 @@ class Entity(pygame.sprite.Sprite):
         if rect.left > scr_w:
             return False
         return True
+    def update_pos(self):
+        mv = self.mv
+        mv += pygame.Vector2(self.last_mv) / 2
+        self.rect.move_ip(mv)
 
 class Hat(Entity):
     hatId: str
@@ -292,7 +299,7 @@ class Player(Entity):
         if DEBUG:
             particles.add(Particle('dude_walking-2', self.rect.center))
         """
-class AAMI(Entity): # implements crunchable
+class AAMI(Entity): # implements ICrunchable
     crunchedBy: str = None
     def __init__(self, pos=(0, scr_center[1])):
         global next_AAMI_speed
@@ -303,10 +310,8 @@ class AAMI(Entity): # implements crunchable
         super(AAMI, self).__init__()
         self.surf = pygame.surface.Surface((160,80))
         self.img = pygame.image.load(os.path.join('assets', 'AAMI.png')).convert()
-        self.rect = stuuf.FRect(self.surf.get_rect(center=pos))
+        self.rect = stuuf.FRect(self.surf.get_rect(bottomright=pos))
         self.surf.blit(pygame.transform.scale(self.img, (160,80)), (0,0))
-    def update_pos(self):
-        self.rect.move_ip(self.mv)
     def update_logic(self):
         rect = self.rect
         if (rect.right <= 0) or (rect.left > scr_w) or \
@@ -314,6 +319,20 @@ class AAMI(Entity): # implements crunchable
             self.kill("fell off the screen.")
         if self.crunched:
             self.kill("was crunched" + (f' by {self.crunchedBy}' if self.crunchedBy is not None else '') + ".")
+class DoorDacker(Entity): # implements ISmackable
+    bike = pygame.image.load(os.path.join('assets', 'doordack_bike-only.png'))
+    img  = pygame.image.load(os.path.join('assets', 'doordack_bike.png'))
+    hand = pygame.image.load(os.path.join('assets', 'doordack_hand-only.png')) # the hand from the 'smash it' ads
+    def __init__(self, pos=(0,0)):
+        super().__init__()
+        self.surf = random.choice([self.bike, self.bike, self.img])
+        self.rect = self.surf.get_rect(bottomright=pos)
+        self.mv = pygame.Vector2((random.gauss(5, 1), random.gauss(0,0.256)))
+    def update_logic(self):
+        rect = self.rect
+        if (rect.right <= 0) or (rect.left > scr_w) or \
+           (rect.top > scr_h) or (rect.bottom <= 0):
+            self.kill("fell off the screen.")
 class TinaFey(Entity):
     speed = ((1 + HARDNESS) / 2) / 500
     container: util.TinaContainer
@@ -369,11 +388,20 @@ class TinaFey(Entity):
             self.mv = self.dumbpathfinding.mv
         self.mv = pygame.Vector2(self.mv)
         self.last_mv = self.mv
-    def update_pos(self):
-        mv = self.mv
-        mv += pygame.Vector2(self.last_mv) / 2
-        self.rect.move_ip(mv)
-
+    
+class SnoopDogg(Entity):
+    img = pygame.image.load(os.path.join('assets', 'snoop.png'))
+    mv: pygame.math.Vector2 = pygame.Vector2(0.1)
+    def __init__(self, pos=(300,300)):
+        super().__init__(entityName='Snoop Dogg', joinmsg=' is in da house!', joinmsg_format='\033[1m')
+        self.surf = pygame.transform.scale(self.img, (240,240))
+        self.rect = stuuf.FRect(self.surf.get_rect(center=pos))
+        self.dumbpathfinding = stuuf.DumbPathfindingEngine(self.rect, (scr_w, scr_h), 0.1)
+        self.dumbpathfinding.cares_about_distance = 0.8
+    def update_logic(self):
+        self.last_mv = self.mv / 3
+        self.mv = self.mv.lerp(self.dumbpathfinding.update(), 0.6)
+        
 
 class VisualEffect(pygame.sprite.Sprite):
     def __repr__(self) -> str:
