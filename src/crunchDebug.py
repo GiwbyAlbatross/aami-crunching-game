@@ -51,6 +51,7 @@ class DebugWindow(pygame.Surface):
         self.renderText(f"Number of status effects: {len(self.flags.player.effects)}", 3)
         self.renderText(f"Number of doordack orders: {len(self.flags.doordack_orders)}", 4)
         self.renderText(f"Level: {self.flags.level}", 5)
+        self.renderText(f"Current Level.passed: {self.flags.levels[self.flags.level].passed}", 6)
         #self.renderText("Flags:", 1)
         #self.renderText(repr(self.flags), 2)
         self.renderText(HatEventType.toString(self.hatevent), self.lines-1)

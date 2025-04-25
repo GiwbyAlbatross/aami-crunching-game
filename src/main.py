@@ -4,7 +4,7 @@ __lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of cours
 
 """
 TODO:
-- implement second level [IN PROGRESS]
+- implement second level [ALMOST DONE]
 - add status effects from hats [DONE]
 - REMOVE * IMPORTS TO MAKE LINTER HAPPY [DONE
 """
@@ -48,6 +48,7 @@ from settings import ( # so that all of the modules share the same constants...
 )
 import effect
 import util
+from level import Level, LevelGroup
 
 print(f"AAMI Crunching Game. version: {VERSION}")
 
@@ -97,6 +98,7 @@ if __name__ == '__main__':
     flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0)
     flags.running = running
     flags.score = AAMIs_crunched
+    flags.levels = LevelGroup(Level(number=0, passed=True), Level(number=1, passed=False))
     setflags(flags) # from sprites.py
     
     if DEBUG: # debug window and stuff
@@ -148,9 +150,6 @@ if __name__ == '__main__':
     tinas = pygame.sprite.Group()
     snoopDoggs = pygame.sprite.Group()
     falling_hats = pygame.sprite.Group()
-    #particles = pygame.sprite.Group() # old api which shouldn't be used,
-    #                                  # removed to see if it's still being
-    #                                  # used and to save memory space
     visualEffects = pygame.sprite.Group()
     flags.AAMIs = AAMIs
     flags.tinas = tinas
@@ -183,7 +182,7 @@ if __name__ == '__main__':
                     flags.running = False
                 elif event.type == GAME_TICK:
                     # do game tick stuff
-                    if DEBUG: player.update_logic(flags.vfx)
+                    #if DEBUG: player.update_logic(flags.vfx) # was to test particles...
                     player.currenthat = currenthat
                     AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched
@@ -252,6 +251,7 @@ if __name__ == '__main__':
                     
                     if before_AAMIs_crunched != AAMIs_crunched:
                         print(f"AAMIs crunched: {AAMIs_crunched}                           ")
+                        # load assets for winning
                         if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
                             you_won_fname = os.path.join('assets', 'you_won.png')
                             if VERY_VERBOSE: print("Generated you_won_fname")
@@ -336,6 +336,7 @@ if __name__ == '__main__':
                                     flags.doordackers.add(DoorDacker((0, random.randint(0, scr_h))))
                                 else:
                                     flags.snoops.add(SnoopDogg((random.randint(0, scr_w), random.randint(0, scr_h))))
+                                    flags.levels[1].passed = True
                     # process snoops, do this after snoops are initially added, to give them one tick update before rendering
                     for snoop in flags.snoops:
                         snoop.update_logic()
@@ -363,10 +364,12 @@ if __name__ == '__main__':
                             pygame.mixer.music.stop()
                             AAMIs_crunched = flags.score
                             tinafey_likelihood = AAMIs_crunched + tinafey_likelihood # gets harder
-                            AAMIs_crunched -= 45 # basically resets the game
                             flags.you_won = False
                             flags.score = AAMIs_crunched
-                            flags.level += 1 # level up!!! This will be used to get to higher levels in future...
+                            if flags.levels[flags.level].passed: # if the present level has been passed
+                                AAMIs_crunched -= 45 # basically resets the game, doesn't
+                                flags.score    -= 45 # happen if the current level isn't passed
+                                flags.level += 1 # level up!!! This will be used to get to higher levels in future...
                         else:
                             flags.running = False
                             running = 0
@@ -383,7 +386,7 @@ if __name__ == '__main__':
                                 #                                    # this list could be unicode codepoints
                                 #                                    # for food emojis which it would
                                 #                                    # download and blit onto doordacker.surf on the fly
-            scr.fill((1,1,1))
+            scr.fill((1,1,1)) # backdrop. Does loads for the vibe of the game :)
             showrects = flags.show_hitboxes
             
             if flags.you_won: # do happy/walking texture on player
