@@ -1,10 +1,10 @@
-" debug routines "
+" menus "
 # pylint: disable=C0103
 from functools import wraps as _wraps
 import pygame
 from pygame.locals import SRCALPHA
 import stuuf
-from settings import DEBUG, VERY_VERBOSE
+from settings import DEBUG, VERY_VERBOSE, scr_size
 from effect import get_hatranksupto, HatEventType
 
 def debug(func):
@@ -21,15 +21,30 @@ def very_verbose(func):
             return func(*args, **kwargs)
         # return None otherwise
 
-class DebugWindow(pygame.Surface):
-    """debug window which inherits from pygame.Surface .
-    call update every frame (or tick) and  log_hatevent to log hatevents"""
+darkener = pygame.Surface(scr_size, SRCALPHA)
+darkener.fill((15,16,18,50))
 
-    # subclasses can override the update method to show whatever info
-    hatevent: int = 0
-    def __init__(self, flags: stuuf.Flags, size=(300,400), *, surf_flags=0, **kwargs):
+class Widget:
+    surf: pygame.Surface
+    def render(self, surf, pos):
+        surf.blit(self.surf, pos)
+class BaseButton(Widget):
+    def __init__(self, size=[240,160], **kwargs):
+        super().__init__()
+        self.size = size
+        self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
+        self.img = pygame.image.load(os.path.join('assets', 'gui', 'button.png'))
+        self.setText()
+    def setText(self, text: str=None):
+        self.surf= pygame.transform.scale(img, self.size)
+        if text is None: return # pass no args to reset surf
+        surf = self.font.render(text, True, (0,1,2), wraplength=self.width)
+        rect = surf.get_rect(centerx=self.size[0]//2, centery=self.size[1]//2)
+        self.surf.blit(surf, rect)
+
+class Window(pygame.Surface):
+    def __init__(self, size=scr_size, surf_flags=0, **kwargs):
         super().__init__(size, surf_flags | SRCALPHA)
-        self.flags = flags
         self.font_size = kwargs.get('font_size', 24)
         self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
         self.lines= self.height // self.font_size
@@ -38,6 +53,22 @@ class DebugWindow(pygame.Surface):
         pos = [10, 8 + self.font_size*line]
         surf = self.font.render(text, True, (0,1,2), wraplength=self.width)
         return self.blit(surf, pos)
+    def process_event(self, event: pygame.event.Event):
+        "process events. used for the mouse and stuff"
+        pass
+
+class MainMenu(Window):
+    pass
+
+class DebugWindow(Window):
+    """debug window which inherits from pygame.Surface .
+    call update every frame (or tick) and log_hatevent to log hatevents"""
+
+    # subclasses can override the update method to show whatever info
+    hatevent: int = 0
+    def __init__(self, flags: stuuf.Flags, size=(300,400), *, surf_flags=0, **kwargs):
+        super().__init__(size, surf_flags | SRCALPHA)
+        self.flags = flags
     def clear(self):
         "fill surf with default background colour"
         self.fill((250, 240, 200, 192))

@@ -45,8 +45,10 @@ from settings import ( # so that all of the modules share the same constants...
                       VERY_VERBOSE,
                       VERSION,
                       RENDER_DEBUG_WINDOW,
+                      GFX_MODE
 )
 import effect
+import menus
 import util
 from level import Level, LevelGroup
 
@@ -102,13 +104,12 @@ if __name__ == '__main__':
     setflags(flags) # from sprites.py
     
     if DEBUG: # debug window and stuff
-        import crunchDebug
-        flags.debugwindow = crunchDebug.DebugWindow(flags)
+        flags.debugwindow = menus.DebugWindow(flags)
 
     # open logs
     deathmsgs = open('death-messages.log', 'wt')
     load_deathmessage_log(deathmsgs) # also from sprites.py
-
+i
     # events
     GAME_TICK = USEREVENT + 1
     pygame.time.set_timer(GAME_TICK, (1024 // 20)) # 20 times a 'second' (second is 1024 millis)
@@ -472,6 +473,16 @@ if __name__ == '__main__':
                 debugwindow = flags.debugwindow
                 scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
                 del debugwindow
+            if flags.paused:
+                scr.blit(menus.darkener, (0,0))
+                
+                # render menu screen
+                ...
+                
+                if GFX_MODE > 2:
+                    for vfx in flags.vfx:
+                        if isinstance(vfx, Particle):
+                            vfx.render(scr, False)
             pygame.display.flip()
             tiktok.tick(FPS)
         except KeyboardInterrupt:
