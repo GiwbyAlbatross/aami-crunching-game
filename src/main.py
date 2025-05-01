@@ -16,7 +16,7 @@ import math
 import random
 import pygame
 from pygame.locals import QUIT, KEYDOWN, USEREVENT, \
-     K_ESCAPE, K_F3, K_z, \
+     K_ESCAPE, K_F3, K_z, K_SPACE, \
      FULLSCREEN, SRCALPHA
 import stuuf
 from sprites import (
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     AAMIs_crunched = 0
     you_won_fname = ...
     winning_music = ...
-    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0)
+    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0, paused=False)
     flags.running = running
     flags.score = AAMIs_crunched
     flags.levels = LevelGroup(Level(number=0, passed=True), Level(number=1, passed=False))
@@ -181,6 +181,7 @@ if __name__ == '__main__':
                     running = 0
                     flags.running = False
                 elif event.type == GAME_TICK:
+                    if flags.paused: continue # skip ticks when paused
                     # do game tick stuff
                     #if DEBUG: player.update_logic(flags.vfx) # was to test particles...
                     player.currenthat = currenthat
@@ -251,7 +252,7 @@ if __name__ == '__main__':
                     
                     if before_AAMIs_crunched != AAMIs_crunched:
                         print(f"AAMIs crunched: {AAMIs_crunched}                           ")
-                        # load assets for winning
+                        # load assets for winning  :)
                         if AAMIs_crunched > 40 and you_won_fname is ...: # leave ellipsis in
                             you_won_fname = os.path.join('assets', 'you_won.png')
                             if VERY_VERBOSE: print("Generated you_won_fname")
@@ -340,23 +341,22 @@ if __name__ == '__main__':
                     # process snoops, do this after snoops are initially added, to give them one tick update before rendering
                     for snoop in flags.snoops:
                         snoop.update_logic()
-                elif event.type == ADD_AAMI:
-                    # add an AAMI to the collection of AAMIs
-                    new_AAMI = AAMI((0,random.randint(0,scr_h)))
-                    AAMIs.add(new_AAMI)
-                    del new_AAMI
-                    # we also make an attempt to drop a hat for the player
-                    # to catch and gain abilities from
-                    if random.random() > 0.69:
-                        #dropped_hat = Hat(random.randint(0,scr_w), 'top')
-                        dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
-                        effect.process_hat_event(hatevent)
-                        if DEBUG: flags.debugwindow.log_hatevent(hatevent)
-                        falling_hats.add(dropped_hat)
-                        if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
-                        del dropped_hat, hatevent
+                elif event.type == ADD_AAMI and not flags.paused:
+                        # add an AAMI to the collection of AAMIs
+                        new_AAMI = AAMI((0,random.randint(0,scr_h)))
+                        AAMIs.add(new_AAMI)
+                        del new_AAMI
+                        # we also make an attempt to drop a hat for the player
+                        # to catch and gain abilities from
+                        if random.random() > 0.69:
+                            #dropped_hat = Hat(random.randint(0,scr_w), 'top')
+                            dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
+                            effect.process_hat_event(hatevent)
+                            if DEBUG: flags.debugwindow.log_hatevent(hatevent)
+                            falling_hats.add(dropped_hat)
+                            if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
+                            del dropped_hat, hatevent
                 elif event.type == GET_FPS:
-                    pass
                     print(f"FPS: {current_fps}", end='\r')
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
@@ -375,6 +375,8 @@ if __name__ == '__main__':
                             running = 0
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
+                    elif event.key == K_SPACE:
+                        flags.paused = not flags.paused
                     elif event.key == K_z:
                         if not player.dead:
                             if player.currenthat is not None:

@@ -102,9 +102,10 @@ class Entity(pygame.sprite.Sprite):
             return False
         return True
     def update_pos(self):
-        mv = self.mv
-        mv += pygame.Vector2(self.last_mv) / 2
-        self.rect.move_ip(mv)
+        if not flags.paused:
+            mv = self.mv
+            mv += pygame.Vector2(self.last_mv) / 2
+            self.rect.move_ip(mv)
 
 class Hat(Entity):
     hatId: str
@@ -127,27 +128,28 @@ class Hat(Entity):
         " only call on falling hats "
         self.mv[1] += 1
     def update_pos(self):
-        shortmv = pygame.Vector2(1.24, 2.125)
-        on = self.on
-        if on is not None:
-            self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
-            self.mv = [0,0]
-        self.rect.move_ip(self.mv)
-        
-        # make fiery hats catch fire at random
-        if random.random() < 0.05 and self.hatId == 'fiery-hat':
-            self.surf = self._load_hat('burning-fiery-hat')
-        
-        # repulsive hats emit particles
-        if self.hatId == 'repulsive-hat' and random.random() < GFX_MODE/2:
-            # emit particle
-            angle = random.random() * 360
-            particle = Particle('repulsion',
-                                self.rect.center,
-                                shortmv.rotate(angle),
-                                rotspeed=random.random() * 1.5 + 0.5,
-                                start_angle=random.random()*45 + angle)
-            flags.vfx.add(particle)
+        if not flags.paused:
+            shortmv = pygame.Vector2(1.24, 2.125)
+            on = self.on
+            if on is not None:
+                self.rect = self.surf.get_rect(centerx=on.rect.centerx, bottom=on.rect.top + 8)
+                self.mv = [0,0]
+            self.rect.move_ip(self.mv)
+            
+            # make fiery hats catch fire at random
+            if random.random() < 0.05 and self.hatId == 'fiery-hat':
+                self.surf = self._load_hat('burning-fiery-hat')
+            
+            # repulsive hats emit particles
+            if self.hatId == 'repulsive-hat' and random.random() < GFX_MODE/2:
+                # emit particle
+                angle = random.random() * 360
+                particle = Particle('repulsion',
+                                    self.rect.center,
+                                    shortmv.rotate(angle),
+                                    rotspeed=random.random() * 1.5 + 0.5,
+                                    start_angle=random.random()*45 + angle)
+                flags.vfx.add(particle)
     def activate_special_ability(self) -> int:
         "activate the special ability of this hat. Returns hatevent."
         global flags
@@ -255,44 +257,45 @@ class Player(Entity):
             if not VERY_VERBOSE: print("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'), flush=True)
             self.dead = True
     def update_keypresses(self, pressed_keys):
-        if VERY_VERBOSE and random.random() < 0.05: print("updating player position")
-        
-        speed = self.speed
-        
-        if pressed_keys[K_SPACE]:
-            # jump
-            self.jumping = True
-            self.jump = 0 # goes up to 180
-            self.preJumpHeight = self.rect.centery
-        walking = False
-        if pressed_keys[K_c]:
-            self.crunching = True
-        else:
-            self.crunching = False
-        if pressed_keys[K_w]:
-            self.direction = 1
-            self.rect.move_ip(0, -speed)
-            walking = True
-        if pressed_keys[K_s]:
-            self.direction = 1
-            self.rect.move_ip(0, speed)
-            walking = True
-        if pressed_keys[K_a]:
-            self.direction = 1
-            self.rect.move_ip(-speed, 0)
-            walking = True
-        if pressed_keys[K_d]:
-            self.direction = 0
-            self.rect.move_ip(speed, 0)
-            walking = True
-        if walking:
-            self.surf.fill((0,0,0,0))
-            self.img_in_use = 'walking1'
-            self.surf.blit(pygame.transform.flip(self.walking1, bool(self.direction), False), (0,0))
-        else:
-            self.surf.fill((0,0,0,0))
-            self.img_in_use = 'standing'
-            self.surf.blit(self.standing, (0,0))
+        if not flags.paused:
+            if VERY_VERBOSE and random.random() < 0.05: print("updating player position")
+            
+            speed = self.speed
+            
+            if pressed_keys[K_SPACE]:
+                # jump
+                self.jumping = True
+                self.jump = 0 # goes up to 180
+                self.preJumpHeight = self.rect.centery
+            walking = False
+            if pressed_keys[K_c]:
+                self.crunching = True
+            else:
+                self.crunching = False
+            if pressed_keys[K_w]:
+                self.direction = 1
+                self.rect.move_ip(0, -speed)
+                walking = True
+            if pressed_keys[K_s]:
+                self.direction = 1
+                self.rect.move_ip(0, speed)
+                walking = True
+            if pressed_keys[K_a]:
+                self.direction = 1
+                self.rect.move_ip(-speed, 0)
+                walking = True
+            if pressed_keys[K_d]:
+                self.direction = 0
+                self.rect.move_ip(speed, 0)
+                walking = True
+            if walking:
+                self.surf.fill((0,0,0,0))
+                self.img_in_use = 'walking1'
+                self.surf.blit(pygame.transform.flip(self.walking1, bool(self.direction), False), (0,0))
+            else:
+                self.surf.fill((0,0,0,0))
+                self.img_in_use = 'standing'
+                self.surf.blit(self.standing, (0,0))
     def renderhat(self, surf):
         if self.current_hat is not None:
             surf.blit(self.current_hat.surf, self.current_hat.rect)
