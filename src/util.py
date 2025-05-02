@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Union
+from pygame.math import Vector2
 #from sprites import TinaFey
 
 TinaFey = object
@@ -19,3 +20,9 @@ class TinaContainer:
         return self.tina
     def has_tina(self) -> bool:
         return self.tina is not Ellipsis
+
+def add_pos(x, y):
+    x = Vector2(x)
+    y = Vector2(y)
+    z = x + y
+    return tuple(z.x, z.y)
