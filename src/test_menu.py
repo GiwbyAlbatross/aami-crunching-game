@@ -1,9 +1,8 @@
-import stuuf
 from menus import MainMenu
 from settings import *
 
 import pygame
-from pygame.locals import K_SPACE, K_TAB, K_ESCAPE
+from pygame.locals import K_ESCAPE
 
 scr = pygame.display.set_mode((scr_w, scr_h))
 
@@ -22,11 +21,14 @@ while run:
         elif event.type == pygame.KEYDOWN:
             if event.key == K_ESCAPE:
                 run = False
+        if event.type != pygame.MOUSEMOTION:
+            print("Event:", event.type, event.dict)
         menu.process_event(event)
     scr.fill((15,150,250))
     keys = pygame.key.get_pressed()
     menu.update_gfx()
     scr.blit(menu, (0,0))
     pygame.display.flip()
+    #print("FPS:", clk.get_fps(), ' '*10, end='\r')
 
 pygame.quit()

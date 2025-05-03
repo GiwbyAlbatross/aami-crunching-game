@@ -1,9 +1,12 @@
 " menus "
 # pylint: disable=C0103
+# I don't want to integrate tkinter with pygame, so i made my own tkinter for pygame
+from __future__ import annotations
 from functools import wraps as _wraps
 import pygame
-from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE
-import stuuf, util
+from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE, QUIT,RLEACCEL
+import stuuf
+import util
 import os.path
 from settings import DEBUG, VERY_VERBOSE, scr_size, scr_w, scr_h
 from effect import get_hatranksupto, HatEventType
@@ -30,43 +33,89 @@ def very_verbose(func):
 darkener = pygame.Surface(scr_size, SRCALPHA)
 darkener.fill((15,16,18,50))
 
-class Widget:
+class Widget(pygame.sprite.Sprite):
     surf: pygame.Surface
-    def render(self, surf, pos):
+    def __init__(self, size, pos=[0,0], **kwargs):
+        super().__init__()
+        self.pos_offset = kwargs.get('offset', (0,0))
+        self.pos = pos
+        self.size = size
+        self.width, self.height = self.size # tuple unpacking!!!
+        self.rect = pygame.rect.Rect(pos, size)
+        self.font_size = kwargs.get('font_size', self.height - 8)
+        self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
+    def render(self, surf, pos=None):
+        if pos is None and hasattr(self, 'rect'): pos = self.rect
         surf.blit(self.surf, pos)
-class BaseButton(Widget):
+    def is_mouseover(self, mousepos=None) -> bool:
+        if mousepos is None: mousepos = util.sub_pos(pygame.mouse.get_pos(), self.pos_offset)
+        return self.rect.collidepoint(mousepos)
+    def set_hover(self, hovering: bool):
+        pass
+    def handle_click(self):
+        return # weird
+        """if self.is_mouseover():
+            return True"""
+class Button(Widget):
     img = pygame.image.load(os.path.join('assets', 'gui', 'button.png'))
     highlight = pygame.image.load(os.path.join('assets', 'gui', 'button_highlighted.png'))
     text: str = ''
     def __init__(self, size=[240,160], pos=[0,0], **kwargs):
-        super().__init__()
-        self.pos_offset = kwargs.get('offset', (0,0))
-        self.size = size
-        self.rect = pygame.rect.Rect(pos, size)
-        self.font_size = kwargs.get('font_size', 24)
-        self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
+        super().__init__(size, pos, **kwargs)
         self.set_text()
+        self.onClick = lambda: None
     def set_text(self, text: str=None):
         self.surf= pygame.transform.scale(self.img, self.size)
         if text is None: return # pass no args to reset surf
-        self.text = text
-        surf = self.font.render(text, True, (0,1,2), wraplength=self.width)
+        self.text = text.upper()
+        surf = self.font.render(self.text, True, (255,255,255), wraplength=self.width)
         rect = surf.get_rect(centerx=self.size[0]//2, centery=self.size[1]//2)
         self.surf.blit(surf, rect)
     def is_mouseover(self, mousepos=None) -> bool:
-        if mousepos is None: mousepos = util.add_pos(pygame.mouse.get_pos(), self.pos_offset)
+        if mousepos is None: mousepos = util.sub_pos(pygame.mouse.get_pos(), self.pos_offset)
         return self.rect.collidepoint(mousepos)
     def set_hover(self, hovering: bool):
         self.set_text(self.text)
-        if hovering: self.surf.blit(self.highlight, (0,0))
+        if hovering: self.surf.blit(pygame.transform.scale(self.highlight, self.size), (0,0))
     def handle_click(self):
         if self.is_mouseover():
             self.onClick()
+class Label(Widget):
+    " BROKEN DO NOT USE CAUSES PYTHON TO EXIT FROM SIGABRT IDK WHY "
+    def __init__(self, size, pos=[0,0], **kwargs):
+        kwargs['font_size'] = kwargs.get('font_size', int(size[1] / 2))
+        super().__init__(size, pos, **kwargs)
+        self.surf = pygame.Surface(size, SRCALPHA)
+    def set_text(self, text):
+        self.text = text.upper()
+        txt = self.text.split('\n')
+        surfs = [self.font.render(t, True, (255,255,255), wraplength=self.width) \
+                              for t in txt]
+        surf  = pygame.Surface([max(s.width for s in surfs),
+                                self.font_size*len(txt)]).convert_alpha()
+        for i, s in enumerate(surfs):
+            surf.blit(s, (0,self.font_size*i))
+        rect = surf.get_rect(centerx=self.size[0]//2, centery=self.size[1]//2)
+        self.surf.blit(surf, rect)
+class ImageLabel(Widget):
+    def __init__(self, size, pos=[0,0], **kwargs):
+        super().__init__(size, pos, **kwargs)
+        self.surf = pygame.Surface(size, SRCALPHA)
+    def load_texture(self, texture):
+        self.surf.blit(
+            pygame.transform.scale(
+                pygame.image.load(
+                    os.path.join('assets', 'gui', texture)),
+                self.size),
+            (0,0))
 
 class Window(pygame.Surface):
     _events: list[pygame.event.Event]
+    _eventhandlers: dict[int, list]
+    do_event_handlers: bool = True
     def __init__(self, size=scr_size, surf_flags=0, **kwargs):
         super().__init__(size, surf_flags | SRCALPHA)
+        self._eventhandlers = {}
         self.font_size = kwargs.get('font_size', 24)
         self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
         self.lines= self.height // self.font_size
@@ -79,42 +128,110 @@ class Window(pygame.Surface):
     def process_event(self, event: pygame.event.Event):
         "process events. used for the mouse and stuff"
         self._events.append(event)
+        if event.type not in self._eventhandlers: return # is no handlers are registered
+        for eventhandler in self._eventhandlers[event.type]:
+            eventhandler(event)
     def get_events(self) -> list[pygame.event.Event]:
         """works the same as pygame.event.get but only gets events passed to process_event
         also it won't interfere with the global pygame.event.get"""
         events = self._events.copy()
         self._events.clear()
         return events
+    def register_event_handler(self, eventId: int, function):
+        if eventId not in self._eventhandlers: self._eventhandlers[eventId] = []
+        self._eventhandlers[eventId].append(function)
 
-class MainMenu(Window):
+class BaseMenu(Window):
+    write_surf: pygame.Surface
+    widgets: pygame.sprite.Group
+    visible: bool
+    background_transparency: int = 0
+    submenus: list[BaseMenu]
+    def __init__(self, size=scr_size, surf_flags=0, **kwargs):
+        super().__init__(size, surf_flags, **kwargs)
+        if VERY_VERBOSE: print("Initialising Menu", repr(self))
+        self.visible = kwargs.get('visible', True)
+        self.write_rect = pygame.rect.Rect(self.left_margin, self.top_margin,
+                               scr_w - self.left_margin*2, scr_h - self.top_margin*2)
+        self.write_surf = pygame.Surface((self.write_rect.width,
+                                          self.write_rect.height), surf_flags | SRCALPHA)
+        self.widgets = pygame.sprite.Group()
+        self.submenus= []
+        self.register_event_handler(pygame.MOUSEMOTION, self.mousemove_handler)
+        self.register_event_handler(pygame.MOUSEBUTTONDOWN, self.mousedown_handler)
+    def mousemove_handler(self, event: pygame.event.Event):
+        # update button stuff
+        for widget in self.widgets:
+            if isinstance(widget, Button):
+                widget.set_hover(widget.is_mouseover())
+    def mousedown_handler(self, event: pygame.event.Event):
+        # update button stuff
+        for widget in self.widgets:
+            widget.handle_click()
+    def update_gfx(self):
+        self.do_event_handlers = self.visible
+        # clear self (screen)
+        if not self.visible: self.fill((0,0,0,0)); return
+        self.fill((0,0,0,self.background_transparency))
+        # render widgets
+        for widget in self.widgets:
+            widget.render(self.write_surf)
+            if VERY_VERBOSE and GFX_MODE > 3:
+                pygame.draw.rect(self, (200,200,200), widget.rect, 2)
+                #pygame.draw.circle(self, (255,255,255), util.sub_pos(pygame.mouse.get_pos(), widget.pos_offset), 4)
+        # render to main surf
+        self.blit(self.write_surf, self.write_rect)
+        # render submenus on top
+        for submenu in self.submenus:
+            if submenu.visible:
+                for event in self.get_events():
+                    submenu.process_event(event)
+            submenu.update_gfx()
+            self.blit(submenu, (0,0))
+        if DEBUG: pygame.draw.rect(self, (100, 100, 100), self.write_rect, 3)
+
+class MainMenu(BaseMenu):
     left_margin = 0 + MAINMENU_MARGIN_X
     right_margin = scr_w - MAINMENU_MARGIN_X
     top_margin = 0 + MAINMENU_MARGIN_Y
     bottom_margin = scr_h - MAINMENU_MARGIN_Y
-    write_rect = pygame.rect.Rect(left_margin, top_margin,
-                                  scr_w - MAINMENU_MARGIN_X*2, scr_h - MAINMENU_MARGIN_Y*2)
-    write_surf = pygame.Surface((write_rect.width, write_rect.height))
-    widgets: pygame.sprite.Group
-    def _init__(self, size=scr_size, surf_flags=0, **kwargs):
-        super().__init__(size, surf_flags, **kwargs)
-        self.widgets = pygame.sprite.Group()
     def build_contents(self):
-        if VERY_VERBOSE: print("MainMenu safe area rect:", self.write_ryect)
+        rusure = AreYouSure(visible=False)
+        rusure.build_contents(function=lambda: pygame.event.post(pygame.event.Event(QUIT)))
+        self.submenus.append(rusure)
+        if VERY_VERBOSE: print("MainMenu safe area rect:", self.write_rect)
         #self.write_surf.fill((255,255,255)) # placeholder white square
-        back_button = BaseButton([self.write_rect.width, 96])
-        back_button.onclick = lambda s: pygame.event.post(pygame.event.Event(KEYDOWN, key=K_SPACE))
+        back_button = Button([self.write_rect.width, 96], offset=self.write_rect.topleft)
+        back_button.set_text("Return to Game")
+        back_button.onClick = lambda: pygame.event.post(pygame.event.Event(KEYDOWN, key=K_SPACE))
         self.widgets.add(back_button)
-    def update_gfx(self):
-        # update button stuff
-        for widget in self.widgets:
-            if isinstance(widget, BaseButton):
-                widget.set_hover(widget.is_mouseover())
-        # render widgets
-        for widget in self.widgets:
-            widget.render(self.write_rect)
-        # render to main surf
-        self.fill((0,0,0,0))
-        self.blit(self.write_surf, self.write_rect)
+        quit_button = Button([self.write_rect.width,96], [0,self.write_rect.bottom-192],offset=self.write_rect.topleft)
+        quit_button.onClick = lambda: setattr(rusure, 'visible', True)
+        quit_button.set_text("Quit Game")
+        self.widgets.add(quit_button)
+class AreYouSure(BaseMenu):
+    left_margin = 0 + 300 #      # margins
+    right_margin = scr_w - 300 # # and
+    top_margin = 0 + 250 #       # stuff
+    bottom_margin = scr_h - 250
+    background_transparency = 200
+    def build_contents(self, function):
+        label = ImageLabel([self.write_rect.width, self.write_rect.height//2],
+                       [0,0],
+                       offset=self.write_rect.topleft)
+        if VERY_VERBOSE: print("\033[1mRUSure.size=", label.size, "\033[0m")
+        label.load_texture('rusure.png')
+        no_button = Button([self.write_rect.width//2, self.write_rect.height//2],
+                               [0, self.write_rect.height//2], offset=self.write_rect.topleft)
+        no_button.set_text("No")
+        yes_button= Button([self.write_rect.width//2, self.write_rect.height//2],
+                               [self.write_rect.width//2, self.write_rect.height//2],
+                               offset=self.write_rect.topleft)
+        yes_button.set_text("Yes")
+        no_button.onClick = lambda: setattr(self, 'visible', False) # fun little hack (setattr to avoid setting variables in lambda)
+        def onYes(): self.visible = True; function() # could use same hack here....
+        yes_button.onClick = onYes
+        self.widgets.add(yes_button, no_button, label)
 
 class DebugWindow(Window):
     """debug window which inherits from pygame.Surface .

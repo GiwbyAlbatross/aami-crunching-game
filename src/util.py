@@ -25,4 +25,9 @@ def add_pos(x, y):
     x = Vector2(x)
     y = Vector2(y)
     z = x + y
-    return tuple(z.x, z.y)
+    return [z.x, z.y]
+def sub_pos(x, y):
+    x = Vector2(x)
+    y = Vector2(y)
+    z = x - y
+    return [z.x, z.y]

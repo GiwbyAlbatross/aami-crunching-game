@@ -10,8 +10,7 @@ import math
 import random
 import pygame
 from io import StringIO
-from pygame.locals import USEREVENT, \
-     K_w, K_a, K_s, K_d, K_SPACE, K_c, \
+from pygame.locals import K_w, K_a, K_s, K_d, K_SPACE, K_c, \
      SRCALPHA
 import stuuf
 import effect
@@ -487,6 +486,7 @@ class Particle(VisualEffect):
         self.rotation = start_angle
         self.mv  = pygame.Vector2(inital_mv)
         self.update_pos()
+        if GFX_MODE > 3: self.is_on_screen = self.is_particle_killable # particles come back down when GFX_MODE > 3
     def update_pos(self):
         self.rect.move_ip(self.mv)
         self.pos = pygame.Vector2(self.rect.center)
@@ -501,3 +501,12 @@ class Particle(VisualEffect):
         if VERY_VERBOSE: print("Particle pos", self.pos)
         rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
         surf.blit(srf, rect)
+    def is_particle_killable(self) -> bool:
+        rect = self.rect
+        if rect.top > scr_h:
+            return False
+        if rect.right < 0:
+            return False
+        if rect.left > scr_w:
+            return False
+        return True

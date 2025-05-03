@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # open logs
     deathmsgs = open('death-messages.log', 'wt')
     load_deathmessage_log(deathmsgs) # also from sprites.py
-i
+    
     # events
     GAME_TICK = USEREVENT + 1
     pygame.time.set_timer(GAME_TICK, (1024 // 20)) # 20 times a 'second' (second is 1024 millis)

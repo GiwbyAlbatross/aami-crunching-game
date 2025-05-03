@@ -1,7 +1,6 @@
 "a class (and, in future, functions) facilitating the whole 'level' thing"
 
 from dataclasses import dataclass
-from copy import copy
 
 @dataclass
 class Level:

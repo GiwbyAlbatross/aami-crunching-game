@@ -1,7 +1,6 @@
 " stuuf for pygame applications. Originally written for the AAMI crunching game. Under GPL v2 license."
 
 from warnings import warn
-from math import sqrt
 import random
 import pygame
 ra = 'assets/db-34795e74823c0de27945f2794542589deadbeef623859235-69--pyc/2893-e7d-48042a3869-i.wav'

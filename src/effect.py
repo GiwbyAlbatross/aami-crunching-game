@@ -8,11 +8,10 @@ import math
 
 import pygame
 
-import stuuf
 import sprites
 import util
 
-from settings import VERY_VERBOSE, DEBUG, HARDNESS
+from settings import VERY_VERBOSE, HARDNESS
 
 class Effect:
     " base class for status effects "

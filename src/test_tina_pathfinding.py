@@ -1,5 +1,4 @@
-import stuuf
-from sprites import TinaFey, Entity, SnoopDogg
+from sprites import Entity, SnoopDogg
 from settings import *
 
 import pygame
