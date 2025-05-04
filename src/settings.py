@@ -5,7 +5,7 @@ scr_h = 768 #  # size
 FPS = 60 # target FPS
 GFX_MODE = 4 # determines how graphics-intensive this should be
 
-VERSION = 'v1.2.2-BETA'
+VERSION = 'v1.2.3-ALPA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions

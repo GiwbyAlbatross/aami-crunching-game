@@ -188,7 +188,7 @@ class BaseMenu(Window):
                     submenu.process_event(event)
             submenu.update_gfx()
             self.blit(submenu, (0,0))
-        if DEBUG: pygame.draw.rect(self, (100, 100, 100), self.write_rect, 3)
+        if VERY_VERBOSE: pygame.draw.rect(self, (100, 100, 100), self.write_rect, 3)
 
 class MainMenu(BaseMenu):
     left_margin = 0 + MAINMENU_MARGIN_X

@@ -1,6 +1,6 @@
 " The AAMI crunching game. "
 
-__lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of course this is a joke, but I once had intenions to sell the game
+__lisence__ = 'Um the AAMI crunching game is a paid game (totally). ' # of course, this is a joke, but I once had intenions to sell the game
 
 """
 TODO:
@@ -105,6 +105,7 @@ if __name__ == '__main__':
     
     if DEBUG: # debug window and stuff
         flags.debugwindow = menus.DebugWindow(flags)
+    flags.mainmenu = menus.MainMenu()
 
     # open logs
     deathmsgs = open('death-messages.log', 'wt')
@@ -168,6 +169,7 @@ if __name__ == '__main__':
     # you won screen
     you_won  = ...
     you_died = pygame.image.load(os.path.join('assets', 'you_died.png')).convert_alpha()
+    flags.mainmenu.build_contents()
 
     # clock
     tiktok = pygame.time.Clock()
@@ -178,6 +180,7 @@ if __name__ == '__main__':
         tina = tinacontainer.get_tina()
         try:
             for event in pygame.event.get():
+                if flags.paused: flags.mainmenu.process_event(event)
                 if event.type == QUIT:
                     running = 0
                     flags.running = False
@@ -477,7 +480,8 @@ if __name__ == '__main__':
                 scr.blit(menus.darkener, (0,0))
                 
                 # render menu screen
-                ...
+                flags.mainmenu.update_gfx()
+                scr.blit(flags.mainmenu, (0,0))
                 
                 if GFX_MODE > 2:
                     for vfx in flags.vfx:
