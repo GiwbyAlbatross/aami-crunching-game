@@ -18,5 +18,5 @@ Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and a
 ## Where the hell does all this weirdness come from?
 Long story short, I bunch of television ads.
 
-## What is this `highscore-system` branch?
-This branch adds the high score counter. Has be merged with `main`.
+## What is this launcher??
+The full release of the game became too much to upload to [giwbyalbatross.github.io](https://giwbyalbatross.github.io/aami-crunching.html) so I'm making a script that downloads the game from this repo and installs it automatically (in theory).
