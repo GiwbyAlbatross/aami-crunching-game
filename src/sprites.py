@@ -66,7 +66,7 @@ class Entity(pygame.sprite.Sprite):
         self.entityName = kwargs.get('entityName', None)
         super(Entity, self).__init__(*args)
         self.rect = stuuf.FRect(scr_center, (10,10))
-        logdeath(kwargs.get('joinmsg_format', '') + self.getName(), kwargs.get('joinmsg', 'joined the game.'), '\033[0m')
+        logdeath('\033[32m'+kwargs.get('joinmsg_format', '') + self.getName(), kwargs.get('joinmsg', 'joined the game.'), '\033[0m')
     def __repr__(self) -> str:
         clsName = self.__class__.__name__
         name = self.getName()
@@ -74,7 +74,7 @@ class Entity(pygame.sprite.Sprite):
         return f"<{clsName} Entity \"{name}\" (in {nGroups} groups)>"
     def update_logic(self):
         if not isinstance(self, Player) and DEBUG:
-            print("WARNING: Using inherited update_logic from base Entity class in", repr(self))
+            print("\033[1;31mWARNING: Using inherited update_logic from base Entity class in", repr(self), '\033[0m')
         assert self.rect is not None
         for effect_ in self.effects:
             effect_.apply_on_tick()
@@ -82,7 +82,7 @@ class Entity(pygame.sprite.Sprite):
     def hasCustomName(self):
         return self.entityName is not None
     def kill(self, reason='died.'):
-        logdeath(self.getName(), reason, ":( whomp whomp. ")
+        logdeath('\033[31m', self.getName(), reason, ":( whomp whomp. \033[0m")
         super(Entity, self).kill()
     def getName(self) -> str:
         if self.hasCustomName:
@@ -191,7 +191,7 @@ class Hat(Entity):
                     to_kill = closest_tina
             except AttributeError:
                 to_kill = closest_aami
-            if VERY_VERBOSE: print("Attacking", repr(to_kill), "in a cool-looking way")
+            if VERY_VERBOSE: print("\033[33mAttacking", repr(to_kill), "in a cool-looking way.", '\033[0m')
             if to_kill is closest_aami:
                 flags.score += 1
                 to_kill.crunched = True
@@ -257,7 +257,7 @@ class Player(Entity):
             self.dead = True
     def update_keypresses(self, pressed_keys):
         if not flags.paused:
-            if VERY_VERBOSE and random.random() < 0.05: print("updating player position")
+            if VERY_VERBOSE and random.random() < 0.05: print("\033[2;36mUpdating player position\033[0m")
             
             speed = self.speed
             
@@ -354,10 +354,10 @@ class TinaFey(Entity):
             self.container.set_tina(self)
         if HARDNESS < 5:
             if self.rect.colliderect(flags.player.rect):
-                if VERY_VERBOSE: print("Tina was in hitbox")
+                if VERY_VERBOSE: print("\033[31mTina was in hitbox\033[0m")
                 self.kill('tried to spawn in the player\'s hitbox, which, frankly, is unfair.')
         else:
-            print("<TinaFey> Deal with it.")
+            print("\033[1m<TinaFey> Deal with it.\033[0m")
         #self.dumbpathfinding= do_dumb_pathfinding # old and deprecated
         self.dumbpathfinding = None
         if do_dumb_pathfinding:
@@ -366,7 +366,7 @@ class TinaFey(Entity):
     def kill(self, reason: str=''):
         super().kill(reason)
         if self.container is not None:
-            if VERY_VERBOSE: print("Container is not None")
+            if VERY_VERBOSE: print("\033[36mContainer is not None")
             self.container.set_null_tina()
     def update_logic(self):
         if self.dumbpathfinding is None:
@@ -498,7 +498,7 @@ class Particle(VisualEffect):
         #self.mv.rotate_ip(self.rotation/10) # this completely breaks it idk why it was ever here...
     def render(self, surf, show_hitboxes: bool=None):
         srf = pygame.transform.rotate(self.surf, self.rotation)
-        if VERY_VERBOSE: print("Particle pos", self.pos)
+        if VERY_VERBOSE: print("\033[35mParticle pos", self.pos, end='\033[35m\r')
         rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
         surf.blit(srf, rect)
     def is_particle_killable(self) -> bool:

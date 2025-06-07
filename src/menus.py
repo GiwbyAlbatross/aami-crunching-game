@@ -8,7 +8,7 @@ from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE, QUIT,RLEACCEL
 import stuuf
 import util
 import os.path
-from settings import DEBUG, VERY_VERBOSE, scr_size, scr_w, scr_h
+from settings import DEBUG, VERY_VERBOSE, GFX_MODE, scr_size, scr_w, scr_h
 from effect import get_hatranksupto, HatEventType
 
 pygame.font.init()

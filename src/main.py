@@ -355,10 +355,10 @@ if __name__ == '__main__':
                         if random.random() > 0.69:
                             #dropped_hat = Hat(random.randint(0,scr_w), 'top')
                             dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
-                            effect.process_hat_event(hatevent)
                             if DEBUG: flags.debugwindow.log_hatevent(hatevent)
                             falling_hats.add(dropped_hat)
-                            if VERY_VERBOSE: print(f'Adding hat {dropped_hat}. HatEvent: {bin(hatevent)}')
+                            effect.process_hat_event(hatevent)
+                            if VERY_VERBOSE: print(f'\033[33mAdding hat {dropped_hat}. HatEvent: {bin(hatevent)}\033[0m')
                             del dropped_hat, hatevent
                 elif event.type == GET_FPS:
                     print(f"FPS: {current_fps}", end='\r')

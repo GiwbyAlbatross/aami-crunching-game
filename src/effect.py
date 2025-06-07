@@ -127,11 +127,11 @@ def add_effect_from_hat(entity: sprites.Entity, hat: sprites.Hat, **kwargs) -> E
         effect = effect_constructor(**args) # should perhaps be called kwargs, kwds or kws but whatever
         
         try:
-            if VERY_VERBOSE: print(f"Removing status effect: {entity.effects[0]!r}")
+            if VERY_VERBOSE: print(f"\033[33mRemoving status effect: {entity.effects[0]!r}\033[0m")
             entity.effects = entity.effects[1:] # remove older effects
         except IndexError:
             if HARDNESS > 3: entity.effects = []
-        if VERY_VERBOSE: print(f"Adding status effect: {effect!r}")
+        if VERY_VERBOSE: print(f"\033[33mAdding status effect: {effect!r}\033[0m")
         entity.effects.append(effect)
     except KeyError:
         return Effect(entity) # base effect is basically a dud effect which does nothing
@@ -174,7 +174,7 @@ def process_hat_event(event_type: int) -> None:
     
     m = 0.0000001
     
-    if VERY_VERBOSE: print("Hat Event:", HatEventType.toString(event_type))
+    if VERY_VERBOSE: print("\033[33mHat Event:", HatEventType.toString(event_type), '\033[0m')
     
     catch = event_type & (1 << 5)
     add   = event_type & (1 << 4)

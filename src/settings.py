@@ -9,7 +9,7 @@ VERSION = 'v1.2.3-ALPA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
-VERY_VERBOSE = False # MUST be False in release versions
+VERY_VERBOSE = True # MUST be False in release versions
 RENDER_DEBUG_WINDOW = False
 
 #
