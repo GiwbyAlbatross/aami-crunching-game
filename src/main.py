@@ -19,6 +19,21 @@ from pygame.locals import QUIT, KEYDOWN, USEREVENT, \
      K_ESCAPE, K_F3, K_z, K_SPACE, \
      FULLSCREEN, SRCALPHA
 import stuuf
+from settings import ( # so that all of the modules share the same constants...
+                      HARDNESS,
+                      FPS,
+                      TITLE,
+                      scr_w, scr_h,
+                      scr_center,
+                      tinafey_likelihood,
+                      SHOW_FPS,
+                      DEBUG,
+                      VERY_VERBOSE,
+                      VERSION,
+                      RENDER_DEBUG_WINDOW,
+                      GFX_MODE,
+                      FULLSCREEN
+)
 from sprites import (
                      setflags,
                      load_deathmessage_log,
@@ -32,20 +47,6 @@ from sprites import (
                      Particle,
                      VisualEffect,
                      LightningBolt,
-)
-from settings import ( # so that all of the modules share the same constants...
-                      HARDNESS,
-                      FPS,
-                      TITLE,
-                      scr_w, scr_h,
-                      scr_center,
-                      tinafey_likelihood,
-                      SHOW_FPS,
-                      DEBUG,
-                      VERY_VERBOSE,
-                      VERSION,
-                      RENDER_DEBUG_WINDOW,
-                      GFX_MODE
 )
 import effect
 import menus
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     pygame.init()
 
     # open a window
-    scr = pygame.display.set_mode((scr_w, scr_h))
+    scr = pygame.display.set_mode((scr_w, scr_h), pygame.FULLSCREEN if FULLSCREEN else 0)
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
     # and loading screen
@@ -185,6 +186,7 @@ if __name__ == '__main__':
                     running = 0
                     flags.running = False
                 elif event.type == GAME_TICK:
+                    current_fps = tiktok.get_fps() # get current FPs every once in a while
                     if flags.paused: continue # skip ticks when paused
                     # do game tick stuff
                     #if DEBUG: player.update_logic(flags.vfx) # was to test particles...
@@ -329,7 +331,7 @@ if __name__ == '__main__':
                     if random.random() > 0.9:
                         flags.vfx.add(Particle('bread', start_pos=(random.randint(-25, scr_w), -25), size=(44,44)))
                     if DEBUG: flags.debugwindow.update()
-                    current_fps = tiktok.get_fps()
+                    
                     if flags.level >= 1:
                         # do fancy 'level 2' things
                         if random.random() < 0.05:
@@ -495,7 +497,7 @@ if __name__ == '__main__':
     
     deathmsgs.close()
 
-    print('\n')
+    print('\n\033[0m')
     print(f"Score: {flags.score}, Level: {flags.level + 1}")
     pygame.quit()
     total_score = flags.score + flags.level*45

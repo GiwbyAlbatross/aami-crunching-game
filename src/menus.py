@@ -149,7 +149,7 @@ class BaseMenu(Window):
     submenus: list[BaseMenu]
     def __init__(self, size=scr_size, surf_flags=0, **kwargs):
         super().__init__(size, surf_flags, **kwargs)
-        if VERY_VERBOSE: print("Initialising Menu", repr(self))
+        if VERY_VERBOSE: print("\033[36mInitialising Menu", repr(self), '\033[0m')
         self.visible = kwargs.get('visible', True)
         self.write_rect = pygame.rect.Rect(self.left_margin, self.top_margin,
                                scr_w - self.left_margin*2, scr_h - self.top_margin*2)
@@ -199,7 +199,7 @@ class MainMenu(BaseMenu):
         rusure = AreYouSure(visible=False)
         rusure.build_contents(function=lambda: pygame.event.post(pygame.event.Event(QUIT)))
         self.submenus.append(rusure)
-        if VERY_VERBOSE: print("MainMenu safe area rect:", self.write_rect)
+        if VERY_VERBOSE: print("\033[36mMainMenu safe area rect:", self.write_rect, '\033[0m')
         #self.write_surf.fill((255,255,255)) # placeholder white square
         back_button = Button([self.write_rect.width, 96], offset=self.write_rect.topleft)
         back_button.set_text("Return to Game")
@@ -219,7 +219,7 @@ class AreYouSure(BaseMenu):
         label = ImageLabel([self.write_rect.width, self.write_rect.height//2],
                        [0,0],
                        offset=self.write_rect.topleft)
-        if VERY_VERBOSE: print("\033[1mRUSure.size=", label.size, "\033[0m")
+        if VERY_VERBOSE: print("\033[36mRUSure.size=", label.size, "\033[0m")
         label.load_texture('rusure.png')
         no_button = Button([self.write_rect.width//2, self.write_rect.height//2],
                                [0, self.write_rect.height//2], offset=self.write_rect.topleft)

@@ -498,7 +498,7 @@ class Particle(VisualEffect):
         #self.mv.rotate_ip(self.rotation/10) # this completely breaks it idk why it was ever here...
     def render(self, surf, show_hitboxes: bool=None):
         srf = pygame.transform.rotate(self.surf, self.rotation)
-        if VERY_VERBOSE: print("\033[35mParticle pos", self.pos, end='\033[35m\r')
+        if VERY_VERBOSE: print("\033[35mParticle pos", self.pos, end='\033[0m\r')
         rect= srf.get_rect(centerx=self.pos.x, centery=self.pos.y)
         surf.blit(srf, rect)
     def is_particle_killable(self) -> bool:
