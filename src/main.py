@@ -397,7 +397,7 @@ if __name__ == '__main__':
                     elif event.key == K_SPACE:
                         flags.paused = not flags.paused
                     elif event.key == K_z:
-                        if (not player.dead) and flags.paused:
+                        if (not player.dead) and (not flags.paused):
                             if player.currenthat is not None:
                                 effect.process_hat_event(
                                     player.currenthat.activate_special_ability()
