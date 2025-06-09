@@ -25,6 +25,7 @@ from settings import ( # so that all of the modules share the same constants...
                       TITLE,
                       scr_w, scr_h,
                       scr_center,
+                      scr_size,
                       tinafey_likelihood,
                       SHOW_FPS,
                       DEBUG,
@@ -32,7 +33,8 @@ from settings import ( # so that all of the modules share the same constants...
                       VERSION,
                       RENDER_DEBUG_WINDOW,
                       GFX_MODE,
-                      FULLSCREEN
+                      FULLSCREEN,
+                      DRAW_ON_SCREENSHOT
 )
 from sprites import (
                      setflags,
@@ -77,10 +79,21 @@ def renderFPS(surf, fps):
 if __name__ == '__main__':
     pygame.init()
 
+    if DRAW_ON_SCREENSHOT:
+        try: os.remove('/tmp/aami-crunching-backdrop.png')
+        except FileNotFoundError: pass
+        os.system('scrot /tmp/aami-crunching-backdrop.png')
+
     # open a window
     scr = pygame.display.set_mode((scr_w, scr_h), pygame.FULLSCREEN if FULLSCREEN else 0)
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
+    if DRAW_ON_SCREENSHOT:
+        # fun backdrop :)
+        backdrop = pygame.transform.scale(
+            pygame.image.load('/tmp/aami-crunching-backdrop.png'),
+            scr_size)
+        scr.blit(backdrop, (0,0))
     # and loading screen
     try:
         scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
@@ -384,7 +397,7 @@ if __name__ == '__main__':
                     elif event.key == K_SPACE:
                         flags.paused = not flags.paused
                     elif event.key == K_z:
-                        if not player.dead:
+                        if (not player.dead) and flags.paused:
                             if player.currenthat is not None:
                                 effect.process_hat_event(
                                     player.currenthat.activate_special_ability()
@@ -394,7 +407,10 @@ if __name__ == '__main__':
                                 #                                    # this list could be unicode codepoints
                                 #                                    # for food emojis which it would
                                 #                                    # download and blit onto doordacker.surf on the fly
-            scr.fill((1,1,1)) # backdrop. Does loads for the vibe of the game :)
+            if DRAW_ON_SCREENSHOT:
+                scr.blit(backdrop, (0,0))
+            else:
+                scr.fill((1,1,1)) # backdrop. Does loads for the vibe of the game :)
             showrects = flags.show_hitboxes
             
             if flags.you_won: # do happy/walking texture on player
