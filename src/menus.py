@@ -176,8 +176,8 @@ class BaseMenu(Window):
         # render widgets
         for widget in self.widgets:
             widget.render(self.write_surf)
-            if VERY_VERBOSE and GFX_MODE > 3:
-                pygame.draw.rect(self, (200,200,200), widget.rect, 2)
+            #if VERY_VERBOSE and GFX_MODE > 3:
+            #    pygame.draw.rect(self, (200,200,200), widget.rect, 2)
                 #pygame.draw.circle(self, (255,255,255), util.sub_pos(pygame.mouse.get_pos(), widget.pos_offset), 4)
         # render to main surf
         self.blit(self.write_surf, self.write_rect)
@@ -188,7 +188,7 @@ class BaseMenu(Window):
                     submenu.process_event(event)
             submenu.update_gfx()
             self.blit(submenu, (0,0))
-        if VERY_VERBOSE: pygame.draw.rect(self, (100, 100, 100), self.write_rect, 3)
+        #if VERY_VERBOSE: pygame.draw.rect(self, (100, 100, 100), self.write_rect, 3)
 
 class MainMenu(BaseMenu):
     left_margin = 0 + MAINMENU_MARGIN_X

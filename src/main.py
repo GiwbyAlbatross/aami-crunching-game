@@ -217,9 +217,9 @@ if __name__ == '__main__':
                             AAMIs_crunched += 1
                             crunch.play()
                         if tinacontainer.has_tina():
-                            if aami.rect.colliderect(tina.rect) and (random.random() > 0.45):
+                            if tina.rect.contains(aami.rect) and (random.random() > 0.25):
                                 aami.crunched = True
-                                aami.crunchedBy = 'TinaFey'
+                                aami.crunchedBy = 'Tina Fey'
                                 if random.random() > 0.1:
                                     crunch.play()
                             # tina can now crunch AAMIs

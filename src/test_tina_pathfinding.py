@@ -1,5 +1,6 @@
-from sprites import Entity, SnoopDogg
+from sprites import Entity, SnoopDogg, setflags
 from settings import *
+from stuuf import Flags
 
 import pygame
 from pygame.locals import K_SPACE, K_TAB, K_ESCAPE
@@ -9,6 +10,8 @@ scr = pygame.display.set_mode((scr_w, scr_h))
 run = True
 mvlen = 10
 fps = 60
+
+setflags(Flags(paused=False))
 
 clk = pygame.time.Clock()
 
