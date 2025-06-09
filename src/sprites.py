@@ -406,6 +406,12 @@ class SnoopDogg(Entity):
     def update_logic(self):
         self.last_mv = self.mv / 3
         self.mv = self.mv.lerp(self.dumbpathfinding.update(), 0.6)
+        # new functionality! SnoopDoggs now crunch AAMIs and increase score!
+        for aami in flags.AAMIs:
+            if self.rect.contains(aami.rect):
+                aami.crunched = True
+                aami.crunchedBy = self.getName()
+                flags.score += 1
         
 
 class VisualEffect(pygame.sprite.Sprite):

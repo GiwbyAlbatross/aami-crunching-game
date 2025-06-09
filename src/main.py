@@ -111,7 +111,7 @@ if __name__ == '__main__':
     AAMIs_crunched = 0
     you_won_fname = ...
     winning_music = ...
-    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0, paused=False)
+    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=1, paused=False)
     flags.running = running
     flags.score = AAMIs_crunched
     flags.levels = LevelGroup(Level(number=0, passed=True), Level(number=1, passed=False))

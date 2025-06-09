@@ -13,8 +13,8 @@ VERSION = 'v1.2.4-ALPHA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
-VERY_VERBOSE = True # MUST be False in release versions
-RENDER_DEBUG_WINDOW = False
+VERY_VERBOSE = False # MUST be False in release versions
+RENDER_DEBUG_WINDOW = True
 
 #   Here's a fun ASCII-art beacon for you to look at
 # #
