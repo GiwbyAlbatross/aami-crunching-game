@@ -6,6 +6,7 @@ import os
 #import tkinter # maybe use a GUI?
 
 VERSIONS = { # download URLs of various versions of the game
+    "v1.3.1":"https://github.com/GiwbyAlbatross/aami-crunching-game/raw/refs/heads/main/releases/release-13-010725_BETA.tar.gz",
     "v1.2.2":"https://github.com/GiwbyAlbatross/aami-crunching-game/raw/refs/heads/main/releases/release-12-010525_BETA.tar.gz",
     "v1.1.0":"https://giwbyalbatross.github.io/downloads/aami-crunching/release-11-250325.tar.gz", # current release version
     "v1.0.2":"https://github.com/GiwbyAlbatross/aami-crunching-game/raw/refs/heads/main/releases/release-10-190225_BETA.tar.gz",
