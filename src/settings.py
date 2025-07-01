@@ -9,7 +9,7 @@ GFX_MODE = 4 # determines how graphics-intensive this should be
 FULLSCREEN = False
 DRAW_ON_SCREENSHOT = False
 
-VERSION = 'v1.2.4-ALPHA'
+VERSION = 'v1.3.1-BETA'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions

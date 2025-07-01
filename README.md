@@ -19,7 +19,7 @@ Crunch as many AAMIs as possible ('you won' sequence triggers at score=50) and a
 Long story short, I bunch of television ads.
 
 # World Record
-This is the current workd record, as outputted by the game:
+This is the current world record, as outputted by the game:
 ```
 Score: 862, Level: 22
 So you crunched 1807 AAMIs!
