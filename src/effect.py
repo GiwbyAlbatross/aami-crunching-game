@@ -97,7 +97,7 @@ class Attractiveness(BaseAAMIAtrractor):
 class Levitation(Effect):
     name: str = 'levitiation'
     associated_hat: str = 'top'
-    y: float
+    y: float # apparently not used?
     def apply_once(self):
         self.y = self.currently_on.rect.centery
     def apply_on_tick(self):

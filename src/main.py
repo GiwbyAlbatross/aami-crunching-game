@@ -199,10 +199,10 @@ if __name__ == '__main__':
                     running = 0
                     flags.running = False
                 elif event.type == GAME_TICK:
-                    current_fps = tiktok.get_fps() # get current FPs every once in a while
+                    current_fps = tiktok.get_fps() # get current FPS every once in a while
                     if flags.paused: continue # skip ticks when paused
                     # do game tick stuff
-                    #if DEBUG: player.update_logic(flags.vfx) # was to test particles...
+                    player.update_logic() # this being commented out cause issue #1
                     player.currenthat = currenthat
                     AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched

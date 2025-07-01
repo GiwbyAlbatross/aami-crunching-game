@@ -32,7 +32,7 @@ def load_deathmessage_log(log):
 
 def noesc(s) -> str:
     r = ''
-    inesc = False 
+    inesc = False
     for c in s:
         if c == '\033':
             inesc = True
@@ -298,12 +298,12 @@ class Player(Entity):
     def renderhat(self, surf):
         if self.current_hat is not None:
             surf.blit(self.current_hat.surf, self.current_hat.rect)
-    def update_logic(self, particles):
-        ### TEST PARTICLES ###
-        # which work now!!!
-        super().update_logic()
-        """if DEBUG:
-            flags.vfx.add(Particle('bread', self.rect.center))"""
+    #def update_logic(self, particles): # related to issue #1
+    #    ### TEST PARTICLES ###
+    #    # which work now!!!
+    #    super().update_logic()
+    #    """if DEBUG:
+    #        flags.vfx.add(Particle('bread', self.rect.center))"""
 class AAMI(Entity): # implements ICrunchable
     crunchedBy: str = None
     def __init__(self, pos=(0, scr_center[1])):
