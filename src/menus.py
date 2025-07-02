@@ -2,6 +2,7 @@
 # pylint: disable=C0103
 # I don't want to integrate tkinter with pygame, so i made my own tkinter for pygame
 from __future__ import annotations
+from typing import Optional
 from functools import wraps as _wraps
 import pygame
 from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE, QUIT,RLEACCEL
@@ -35,6 +36,7 @@ darkener.fill((15,16,18,50))
 
 class Widget(pygame.sprite.Sprite):
     surf: pygame.Surface
+    rect: pygame.Rect | pygame.FRect
     def __init__(self, size, pos=[0,0], **kwargs):
         super().__init__()
         self.pos_offset = kwargs.get('offset', (0,0))
@@ -44,7 +46,7 @@ class Widget(pygame.sprite.Sprite):
         self.rect = pygame.rect.Rect(pos, size)
         self.font_size = kwargs.get('font_size', self.height - 8)
         self.font = pygame.font.Font(kwargs.get('font_id', None), self.font_size)
-    def render(self, surf, pos=None):
+    def render(self, surf, pos: Optional=None):
         if pos is None and hasattr(self, 'rect'): pos = self.rect
         surf.blit(self.surf, pos)
     def is_mouseover(self, mousepos=None) -> bool:
@@ -64,7 +66,7 @@ class Button(Widget):
         super().__init__(size, pos, **kwargs)
         self.set_text()
         self.onClick = lambda: None
-    def set_text(self, text: str=None):
+    def set_text(self, text: str: Optional[str]=None):
         self.surf= pygame.transform.scale(self.img, self.size)
         if text is None: return # pass no args to reset surf
         self.text = text.upper()
