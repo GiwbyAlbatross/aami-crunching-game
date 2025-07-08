@@ -66,7 +66,7 @@ class Button(Widget):
         super().__init__(size, pos, **kwargs)
         self.set_text()
         self.onClick = lambda: None
-    def set_text(self, text: str: Optional[str]=None):
+    def set_text(self, text: Optional[str]=None):
         self.surf= pygame.transform.scale(self.img, self.size)
         if text is None: return # pass no args to reset surf
         self.text = text.upper()

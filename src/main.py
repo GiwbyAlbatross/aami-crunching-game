@@ -202,7 +202,7 @@ if __name__ == '__main__':
                     current_fps = tiktok.get_fps() # get current FPS every once in a while
                     if flags.paused: continue # skip ticks when paused
                     # do game tick stuff
-                    player.update_logic() # this being commented out cause issue #1
+                    player.update_logic() # this being commented out caused issue #1
                     player.currenthat = currenthat
                     AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched

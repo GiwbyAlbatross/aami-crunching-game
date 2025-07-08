@@ -26,3 +26,6 @@ build/
 # when we get this actually working, re-enable the dist/ directory
 # so that it can store compiled aami crunching distrobutions
 dist/
+
+# vim swap?
+*.swp

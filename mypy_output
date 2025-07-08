@@ -1,0 +1,62 @@
+src/settings.py:71: error: Incompatible types in assignment (expression has type "str", variable has type "ellipsis")
+src/util.py:10: error: Variable "builtins.Ellipsis" is not valid as a type
+src/util.py:10: note: See https://mypy.readthedocs.io/en/latest/common_issues.html#variables-vs-type-aliases
+src/util.py:11: error: Variable "builtins.Ellipsis" is not valid as a type
+src/util.py:11: note: See https://mypy.readthedocs.io/en/latest/common_issues.html#variables-vs-type-aliases
+src/util.py:16: error: Variable "builtins.Ellipsis" is not valid as a type
+src/util.py:16: note: See https://mypy.readthedocs.io/en/latest/common_issues.html#variables-vs-type-aliases
+src/util.py:19: error: Variable "builtins.Ellipsis" is not valid as a type
+src/util.py:19: note: See https://mypy.readthedocs.io/en/latest/common_issues.html#variables-vs-type-aliases
+src/stuuf.py:27: error: Argument after ** must be a mapping, not "str"
+src/stuuf.py:110: error: Cannot assign multiple types to name "FRect" without an explicit "Type[...]" annotation
+src/stuuf.py:110: error: Incompatible types in assignment (expression has type "Type[Rect]", variable has type "Type[FRect]")
+src/sprites.py:161: error: Incompatible types in assignment (expression has type "None", variable has type "AAMI")
+src/sprites.py:163: error: Incompatible types in assignment (expression has type "None", variable has type "TinaFey")
+src/sprites.py:191: error: Incompatible types in assignment (expression has type "TinaFey", variable has type "AAMI")
+src/sprites.py:217: error: Incompatible types in assignment (expression has type "None", variable has type "Hat")
+src/sprites.py:218: error: Incompatible types in assignment (expression has type "None", variable has type "str")
+src/sprites.py:308: error: Incompatible types in assignment (expression has type "None", variable has type "str")
+src/sprites.py:349: error: Incompatible types in assignment (expression has type "FRect", variable has type "Rect")
+src/sprites.py:424: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "bottom"
+src/sprites.py:426: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "top"
+src/sprites.py:428: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "right"
+src/sprites.py:430: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "left"
+src/sprites.py:477: error: Argument 3 to "rect" has incompatible type "Union[FRect, Rect, None]"; expected "Union[SequenceLike[float], SequenceLike[SequenceLike[float]], _HasRectAttribute]"
+src/sprites.py:512: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "top"
+src/sprites.py:514: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "right"
+src/sprites.py:516: error: Item "None" of "Union[FRect, Rect, None]" has no attribute "left"
+src/effect.py:54: error: Incompatible default for argument "tinas" (default has type "ellipsis", argument has type "Group[Any]")
+src/effect.py:56: error: Incompatible types in assignment (expression has type "TinaContainer", variable has type "TinaFey")
+src/effect.py:77: error: Incompatible default for argument "aamis" (default has type "ellipsis", argument has type "Group[Any]")
+src/effect.py:212: error: No return value expected
+src/test_tina_pathfinding.py:49: error: Too many arguments for "aaline"
+src/menus.py:49: error: Optional[...] must have exactly one type argument
+src/main.py:164: error: Need type annotation for 'AAMIs'
+src/main.py:165: error: Need type annotation for 'doordackers'
+src/main.py:166: error: Need type annotation for 'tinas'
+src/main.py:167: error: Need type annotation for 'snoopDoggs'
+src/main.py:168: error: Need type annotation for 'falling_hats'
+src/main.py:169: error: Need type annotation for 'visualEffects'
+src/main.py:179: error: Assignment to variable 'e' outside except: block
+src/main.py:180: error: Trying to read deleted variable 'e'
+src/main.py:181: error: Trying to read deleted variable 'e'
+src/main.py:202: error: Incompatible types in assignment (expression has type "float", variable has type "int")
+src/main.py:220: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:243: error: "Player" has no attribute "current_hat"; maybe "currenthat"?
+src/main.py:260: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:265: error: Item "object" of "Union[object, Any]" has no attribute "update_logic"
+src/main.py:266: error: Item "object" of "Union[object, Any]" has no attribute "is_on_screen"
+src/main.py:267: error: Item "object" of "Union[object, Any]" has no attribute "kill"
+src/main.py:276: error: Incompatible types in assignment (expression has type "str", variable has type "ellipsis")
+src/main.py:279: error: Incompatible types in assignment (expression has type "Surface", variable has type "ellipsis")
+src/main.py:279: error: Argument 1 to "load" has incompatible type "ellipsis"; expected "Union[Union[str, bytes, _PathLike[str], _PathLike[bytes]], IO[bytes], IO[str]]"
+src/main.py:283: error: Incompatible types in assignment (expression has type "bool", variable has type "ellipsis")
+src/main.py:435: error: Item "object" of "Union[object, Any]" has no attribute "update_pos"
+src/main.py:436: error: Item "object" of "Union[object, Any]" has no attribute "surf"
+src/main.py:436: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:438: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:439: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:440: error: Item "object" of "Union[object, Any]" has no attribute "rect"
+src/main.py:440: error: Item "object" of "Union[object, Any]" has no attribute "mv"
+src/main.py:490: error: Argument 1 to "blit" of "Surface" has incompatible type "ellipsis"; expected "Surface"
+Found 57 errors in 8 files (checked 12 source files)
