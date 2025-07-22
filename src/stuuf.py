@@ -1,6 +1,7 @@
 " stuuf for pygame applications. Originally written for the AAMI crunching game. Under GPL v2 license."
 
 from warnings import warn
+import time
 import random
 import pygame
 ra = 'assets/db-34795e74823c0de27945f2794542589deadbeef623859235-69--pyc/2893-e7d-48042a3869-i.wav'
@@ -102,7 +103,26 @@ class DumbPathfindingEngine:
             self.target = self._generate_target_coords()
         #print(rawmv)
         return self.mv
-
+class Profiler:
+    sectiontimes: dict[str, float]
+    sectionstarts: dict[str, float]
+    def __init__(self) -> None:
+        self.sectiontimes = {}
+        self.sectionstarts = {}
+    def start_section(self, sectionname: str) -> None:
+        self.sectionstarts[sectionname] = time.time()
+    def end_section(self, sectionname: str) -> None:
+        t = time.time()
+        start_time = self.sectionstarts.get(sectionname, t+1)
+        del self.sectionstarts[sectionname]
+        taken = t - start_time
+        oldtime = self.sectiontimes.get(sectionname, taken)
+        self.sectiontimes[sectionname] = (oldtime + taken) / 2
+    def export_report(self, sep='\n') -> str:
+        r = ""
+        for name, time_ in self.sectiontimes.items():
+            r += f"{name}: {int(time_*1000000)/1000} ms{sep}"
+        return r
 
 if hasattr(pygame, 'FRect'):
     FRect = pygame.FRect

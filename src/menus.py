@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import Optional
 from functools import wraps as _wraps
 import pygame
-from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE, QUIT,RLEACCEL
+from pygame.locals import SRCALPHA, KEYDOWN, K_SPACE, QUIT, RLEACCEL, MOUSEMOTION, MOUSEBUTTONDOWN
 import stuuf
 import util
+import time
 import os.path
 from settings import DEBUG, VERY_VERBOSE, GFX_MODE, scr_size, scr_w, scr_h
 from effect import get_hatranksupto, HatEventType
@@ -258,9 +259,18 @@ class DebugWindow(Window):
         self.renderText(f"Number of doordack orders: {len(self.flags.doordack_orders)}", 4)
         self.renderText(f"Level: {self.flags.level}", 5)
         self.renderText(f"Current Level.passed: {self.flags.levels[self.flags.level].passed}", 6)
+        for i, line in enumerate(self.flags.profiler.export_report().split('\n')):
+            self.renderText(line, 7+i)
         #self.renderText("Flags:", 1)
         #self.renderText(repr(self.flags), 2)
         self.renderText(HatEventType.toString(self.hatevent), self.lines-1)
     def log_hatevent(self, hatevent: int):
         "log a hatevent to show at the bottom of the window"
         self.hatevent = hatevent
+
+def wait_for_event():
+    while 1:
+        if pygame.event.peek(MOUSEMOTION): return
+        if pygame.event.peek(MOUSEBUTTONDOWN): return
+        time.sleep(0.05)
+        pygame.display.flip()

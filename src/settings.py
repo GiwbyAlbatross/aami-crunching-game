@@ -14,7 +14,7 @@ VERSION = 'v1.3.1-BETA'
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
 VERY_VERBOSE = False # MUST be False in release versions
-RENDER_DEBUG_WINDOW = False
+RENDER_DEBUG_WINDOW = True
 
 #   Here's a fun ASCII-art beacon for you to look at
 # #
@@ -26,7 +26,7 @@ RENDER_DEBUG_WINDOW = False
 parser = argparse.ArgumentParser(prog='aami-crunching-game', exit_on_error=False)
 parser.add_argument('-F', '--fullscreen', action='store_true', help="Run The AAMI Crunching Game in fullscreen mode. Runs at 1080p by default.")
 parser.add_argument('-V', '--debug', action='store_true', help='Show additional debug information when running the game.')
-parser.add_argument('-d', '--difficulty', type=int, help="Difficulty for the game. Controlls a few things. A positive integer.", default=HARDNESS)
+parser.add_argument('-d', '--difficulty', type=int, help="Difficulty for the game. Controls a few things. A positive integer.", default=HARDNESS)
 parser.add_argument('-G', '--gfx-level', '--graphics-level', type=int, help="How graphics-intensive to make the game. A positive integer.", default=GFX_MODE)
 parser.add_argument('--transparent', action='store_true', help="Pretend the AAMI crunching game is on a transparent window. Requires scrot.")
 args = parser.parse_args()

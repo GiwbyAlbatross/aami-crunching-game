@@ -58,6 +58,7 @@ from level import Level, LevelGroup
 print(f"AAMI Crunching Game. version: {VERSION}")
 
 current_fps = FPS # update sometimes I guess
+target_fps  = FPS # lower in menu to save CPU cycles
 scorestr = "Score: %02d"
 fps_frmt = "FPS: %03f"
 #if DEBUG: tinafey_likelihood = 128 # makes tina VERY likely to spawn, for testing features involving tina
@@ -88,12 +89,6 @@ if __name__ == '__main__':
     scr = pygame.display.set_mode((scr_w, scr_h), pygame.FULLSCREEN if FULLSCREEN else 0)
     # set the window title
     pygame.display.set_caption('Loading... | %s' % TITLE)
-    if DRAW_ON_SCREENSHOT:
-        # fun backdrop :)
-        backdrop = pygame.transform.scale(
-            pygame.image.load('/tmp/aami-crunching-backdrop.png'),
-            scr_size)
-        scr.blit(backdrop, (0,0))
     # and loading screen
     try:
         scr.blit(pygame.image.load(os.path.join('assets', 'loading.png')), (0,0))
@@ -103,6 +98,13 @@ if __name__ == '__main__':
         print("ERROR: loading image not found. perhaps run from wrong directory.")
         print(f"Real Exception: {type(e).__name__}: {str(e)}")
         raise SystemExit(1)
+    if DRAW_ON_SCREENSHOT:
+        # fun backdrop :)
+        backdrop = pygame.transform.scale(
+            pygame.image.load('/tmp/aami-crunching-backdrop.png'),
+            scr_size)
+        scr.blit(backdrop, (0,0))
+    paused_scr = scr.copy()
     # and icon
     try: pygame.display.set_icon(pygame.image.load(os.path.join('assets', 'dude_standing.png')))
     except pygame.error: pass # ignore any errors, this isn't essential
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     AAMIs_crunched = 0
     you_won_fname = ...
     winning_music = ...
-    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=1, paused=False)
+    flags = stuuf.Flags(running=True, you_won=False, show_hitboxes=False, level=0, paused=False) # level = 0 for release
     flags.running = running
     flags.score = AAMIs_crunched
     flags.levels = LevelGroup(Level(number=0, passed=True), Level(number=1, passed=False))
@@ -173,6 +175,8 @@ if __name__ == '__main__':
     flags.doordackers = doordackers
     flags.snoops = snoopDoggs
 
+    profiler = stuuf.Profiler()
+    flags.profiler = profiler
     
     # test effects
     if DEBUG and TEST_EFFECTS:
@@ -191,8 +195,10 @@ if __name__ == '__main__':
     pygame.display.set_caption(TITLE)
 
     while running:
+        profiler.start_section('total')
         tina = tinacontainer.get_tina()
         try:
+            profiler.start_section('event_processing')
             for event in pygame.event.get():
                 if flags.paused: flags.mainmenu.process_event(event)
                 if event.type == QUIT:
@@ -200,7 +206,9 @@ if __name__ == '__main__':
                     flags.running = False
                 elif event.type == GAME_TICK:
                     current_fps = tiktok.get_fps() # get current FPS every once in a while
+                    if DEBUG: flags.debugwindow.update() # update this every tick regardless of game paused-ness
                     if flags.paused: continue # skip ticks when paused
+                    profiler.start_section('tick')
                     # do game tick stuff
                     player.update_logic() # this being commented out caused issue #1
                     player.currenthat = currenthat
@@ -343,7 +351,6 @@ if __name__ == '__main__':
                             vfx.kill()
                     if random.random() > 0.9:
                         flags.vfx.add(Particle('bread', start_pos=(random.randint(-25, scr_w), -25), size=(44,44)))
-                    if DEBUG: flags.debugwindow.update()
                     
                     if flags.level >= 1:
                         # do fancy 'level 2' things
@@ -360,6 +367,7 @@ if __name__ == '__main__':
                     # process snoops, do this after snoops are initially added, to give them one tick update before rendering
                     for snoop in flags.snoops:
                         snoop.update_logic()
+                    profiler.end_section('tick')
                 elif event.type == ADD_AAMI and not flags.paused:
                         # add an AAMI to the collection of AAMIs
                         new_AAMI = AAMI((0,random.randint(0,scr_h)))
@@ -407,79 +415,91 @@ if __name__ == '__main__':
                                 #                                    # this list could be unicode codepoints
                                 #                                    # for food emojis which it would
                                 #                                    # download and blit onto doordacker.surf on the fly
-            if DRAW_ON_SCREENSHOT:
-                scr.blit(backdrop, (0,0))
-            else:
-                scr.fill((1,1,1)) # backdrop. Does loads for the vibe of the game :)
-            showrects = flags.show_hitboxes
-            
-            if flags.you_won: # do happy/walking texture on player
-                player.surf.fill((0,0,0,0))
-                player.surf.blit(pygame.transform.flip(player.walking1,
-                                                       bool(player.direction), False), (0,0))
-            scr.blit(player.surf, player.rect)
-            if currenthat is not None:
-                scr.blit(currenthat.surf, currenthat.rect)
-                currenthat.update_pos()
-            if showrects:
+            profiler.end_section('event_processing')
+            profiler.start_section('render')
+            if not flags.paused:
+                if DRAW_ON_SCREENSHOT:
+                    scr.blit(backdrop, (0,0))
+                else:
+                    scr.fill((1,1,1)) # backdrop. Does loads for the vibe of the game :)
+                
+                profiler.start_section('render_entities')
+                
+                showrects = flags.show_hitboxes
+                
+                if flags.you_won: # do happy/walking texture on player
+                    player.surf.fill((0,0,0,0))
+                    player.surf.blit(pygame.transform.flip(player.walking1,
+                                                           bool(player.direction), False), (0,0))
+                scr.blit(player.surf, player.rect)
                 if currenthat is not None:
-                    pygame.draw.rect(scr, (255, 1, 200), currenthat.rect, 1)
-                if player.crunching:
-                    pygame.draw.rect(scr, (255,0,0), player.rect, 6)
-                pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
-            if not player.dead:
-                player.update_keypresses(pygame.key.get_pressed())
-            player.update_pos()
-            tina = tinacontainer.get_tina()
-            if tinacontainer.has_tina():
-                tina.update_pos()
-                scr.blit(tina.surf, tina.rect)
+                    scr.blit(currenthat.surf, currenthat.rect)
+                    currenthat.update_pos()
                 if showrects:
-                    pygame.draw.rect(scr, (245, 1, 0), tina.rect, 5)
-                    pygame.draw.line(scr, (240, 120, 0), tina.rect.center,
-                                    [tina.rect.centerx + tina.mv[0]*16, tina.rect.centery + tina.mv[1]*16],
-                                    2)
-            for aami in AAMIs:
-                scr.blit(aami.surf, aami.rect)
-                if showrects:
-                    pygame.draw.rect(scr, (0,1,245), aami.rect, 2)
-                aami.update_pos()
-            for doordacker in doordackers:
-                scr.blit(doordacker.surf, doordacker.rect)
-                if showrects:
-                    pygame.draw.rect(scr, (245,1,0), doordacker.rect, 1)
-                doordacker.update_pos()
-                if not doordacker.is_on_screen():
-                    doordacker.kill("(a doordacker) fell of the screen")
-            for harmless_tina in tinas:
-                scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
-                if showrects:
-                    pygame.draw.line(scr, (0, 120, 240), harmless_tina.rect.center,
-                                    [harmless_tina.rect.centerx + harmless_tina.mv[0]*8,
-                                     harmless_tina.rect.centery + harmless_tina.mv[1]*8],
-                                    1)
-                harmless_tina.update_pos()
-            
-            # render snoop
-            for snoop in flags.snoops:
-                snoop.update_pos()
-                scr.blit(snoop.surf, snoop.rect)
-                if showrects:
-                    pygame.draw.rect(scr, (96, 1, 128), snoop.rect, 4)
-                    pygame.draw.line(scr, (1, 128, 96), snoop.rect.center,
-                                    [snoop.rect.centerx + snoop.mv[0]*8,
-                                     snoop.rect.centery + snoop.mv[1]*8],
-                                    1)
+                    if currenthat is not None:
+                        pygame.draw.rect(scr, (255, 1, 200), currenthat.rect, 1)
+                    if player.crunching:
+                        pygame.draw.rect(scr, (255,0,0), player.rect, 6)
+                    pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
+                if not player.dead:
+                    player.update_keypresses(pygame.key.get_pressed())
+                player.update_pos()
+                tina = tinacontainer.get_tina()
+                if tinacontainer.has_tina():
+                    tina.update_pos()
+                    scr.blit(tina.surf, tina.rect)
+                    if showrects:
+                        pygame.draw.rect(scr, (245, 1, 0), tina.rect, 5)
+                        pygame.draw.line(scr, (240, 120, 0), tina.rect.center,
+                                        [tina.rect.centerx + tina.mv[0]*16, tina.rect.centery + tina.mv[1]*16],
+                                        2)
+                for aami in AAMIs:
+                    scr.blit(aami.surf, aami.rect)
+                    if showrects:
+                        pygame.draw.rect(scr, (0,1,245), aami.rect, 2)
+                    aami.update_pos()
+                for doordacker in doordackers:
+                    scr.blit(doordacker.surf, doordacker.rect)
+                    if showrects:
+                        pygame.draw.rect(scr, (245,1,0), doordacker.rect, 1)
+                    doordacker.update_pos()
+                    if not doordacker.is_on_screen():
+                        doordacker.kill("(a doordacker) fell of the screen")
+                for harmless_tina in tinas:
+                    scr.blit(harmless_tina.surf, harmless_tina.rect) # caused much trouble...
+                    if showrects:
+                        pygame.draw.line(scr, (0, 120, 240), harmless_tina.rect.center,
+                                        [harmless_tina.rect.centerx + harmless_tina.mv[0]*8,
+                                         harmless_tina.rect.centery + harmless_tina.mv[1]*8],
+                                        1)
+                    harmless_tina.update_pos()
+                
+                # render snoop
+                for snoop in flags.snoops:
+                    snoop.update_pos()
+                    scr.blit(snoop.surf, snoop.rect)
+                    if showrects:
+                        pygame.draw.rect(scr, (96, 1, 128), snoop.rect, 4)
+                        pygame.draw.line(scr, (1, 128, 96), snoop.rect.center,
+                                        [snoop.rect.centerx + snoop.mv[0]*8,
+                                         snoop.rect.centery + snoop.mv[1]*8],
+                                        1)
 
-            """for particle in particles: # flags.vfx is now used instead
-                particle.update_pos()
-                particle.render(scr)"""
-            for hat in falling_hats: # also caused much trouble
-                hat.update_pos()
-                scr.blit(hat.surf, hat.rect)
-                if showrects:
-                    pygame.draw.rect(scr, (240,1,255), hat.rect, 4)
-            for vfx in flags.vfx:
+                """for particle in particles: # flags.vfx is now used instead
+                    particle.update_pos()
+                    particle.render(scr)"""
+                for hat in falling_hats: # also caused much trouble
+                    hat.update_pos()
+                    scr.blit(hat.surf, hat.rect)
+                    if showrects:
+                        pygame.draw.rect(scr, (240,1,255), hat.rect, 4)
+                paused_scr = scr.copy()
+                profiler.end_section('render_entities')
+            else:
+                profiler.start_section('render_entities')
+                scr.blit(paused_scr, (0,0))
+                profiler.end_section('render_entities')
+            for vfx in flags.vfx: # effects and particles, visual stuff that has no *real* logic
                 vfx.render(scr, flags.show_hitboxes)
                 vfx.update_pos()
             
@@ -490,6 +510,7 @@ if __name__ == '__main__':
             if flags.you_won: scr.blit(you_won, (0,0))
             if player.crunched: scr.blit(you_died, (0,0))
             if SHOW_FPS: renderFPS(scr, current_fps)
+            profiler.start_section('render_window')
             if RENDER_DEBUG_WINDOW: # render debug window
                 debugwindow = flags.debugwindow
                 scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
@@ -505,8 +526,15 @@ if __name__ == '__main__':
                     for vfx in flags.vfx:
                         if isinstance(vfx, Particle):
                             vfx.render(scr, False)
+            profiler.end_section('render_window')
             pygame.display.flip()
-            tiktok.tick(FPS)
+            profiler.end_section('render')
+            profiler.start_section('sleep')
+            if flags.paused: menus.wait_for_event()
+            tiktok.tick(target_fps)
+            profiler.end_section('sleep')
+            if DEBUG and not VERY_VERBOSE: print(f"FPS: {current_fps}, {profiler.export_report(', ')}", end='\r')
+            profiler.end_section('total')
         except KeyboardInterrupt:
             flags.running = False
             break
@@ -549,5 +577,8 @@ if __name__ == '__main__':
         except KeyError:
             setBy = setby
         print(f"The high score is {highscore}, set by {setBy}")
+
+    if DEBUG:
+        print(profiler.export_report())
 
     exit(0)
