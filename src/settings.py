@@ -5,7 +5,7 @@ TITLE = "AAMI crunching" # window title
 scr_w = 1024 # # window
 scr_h = 768 #  # size
 FPS = 60 # target FPS
-GFX_MODE = 4 # determines how graphics-intensive this should be
+GFX_MODE = 2 # determines how graphics-intensive this should be
 FULLSCREEN = False
 DRAW_ON_SCREENSHOT = False
 

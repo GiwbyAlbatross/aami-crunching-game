@@ -116,6 +116,7 @@ class Window(pygame.Surface):
     _events: list[pygame.event.Event]
     _eventhandlers: dict[int, list]
     do_event_handlers: bool = True
+    events_since_render: int = 0
     def __init__(self, size=scr_size, surf_flags=0, **kwargs):
         super().__init__(size, surf_flags | SRCALPHA)
         self._eventhandlers = {}
@@ -134,6 +135,7 @@ class Window(pygame.Surface):
         if event.type not in self._eventhandlers: return # is no handlers are registered
         for eventhandler in self._eventhandlers[event.type]:
             eventhandler(event)
+        self.events_since_render += 1
     def get_events(self) -> list[pygame.event.Event]:
         """works the same as pygame.event.get but only gets events passed to process_event
         also it won't interfere with the global pygame.event.get"""
@@ -160,8 +162,8 @@ class BaseMenu(Window):
                                           self.write_rect.height), surf_flags | SRCALPHA)
         self.widgets = pygame.sprite.Group()
         self.submenus= []
-        self.register_event_handler(pygame.MOUSEMOTION, self.mousemove_handler)
-        self.register_event_handler(pygame.MOUSEBUTTONDOWN, self.mousedown_handler)
+        self.register_event_handler(MOUSEMOTION, self.mousemove_handler)
+        self.register_event_handler(MOUSEBUTTONDOWN, self.mousedown_handler)
     def mousemove_handler(self, event: pygame.event.Event):
         # update button stuff
         for widget in self.widgets:
@@ -173,6 +175,8 @@ class BaseMenu(Window):
             widget.handle_click()
     def update_gfx(self):
         self.do_event_handlers = self.visible
+        if self.events_since_render == 0: return
+        self.events_since_render = 0
         # clear self (screen)
         if not self.visible: self.fill((0,0,0,0)); return
         self.fill((0,0,0,self.background_transparency))
@@ -232,7 +236,7 @@ class AreYouSure(BaseMenu):
                                offset=self.write_rect.topleft)
         yes_button.set_text("Yes")
         no_button.onClick = lambda: setattr(self, 'visible', False) # fun little hack (setattr to avoid setting variables in lambda)
-        def onYes(): self.visible = True; function() # could use same hack here....
+        def onYes(): self.visible = True; function() # could use same hack here (turns out that said hack is less efficient but whatever i like lambdas)
         yes_button.onClick = onYes
         self.widgets.add(yes_button, no_button, label)
 
@@ -268,9 +272,11 @@ class DebugWindow(Window):
         "log a hatevent to show at the bottom of the window"
         self.hatevent = hatevent
 
-def wait_for_event():
+def wait_for_event(): pass
+def _wait_for_event():
     while 1:
         if pygame.event.peek(MOUSEMOTION): return
         if pygame.event.peek(MOUSEBUTTONDOWN): return
+        if pygame.event.peek(KEYDOWN): return
         time.sleep(0.05)
         pygame.display.flip()

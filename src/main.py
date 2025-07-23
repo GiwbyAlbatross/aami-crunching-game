@@ -398,12 +398,15 @@ if __name__ == '__main__':
                                 flags.score    -= 45 # happen if the current level isn't passed
                                 flags.level += 1 # level up!!! This will be used to get to higher levels in future...
                         else:
+                            # future: change to open paused menu instead
                             flags.running = False
                             running = 0
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_SPACE:
                         flags.paused = not flags.paused
+                        target_fps = 5 if flags.paused and GFX_MODE < 3 else FPS
+                        flags.mainmenu.events_since_render = 1
                     elif event.key == K_z:
                         if (not player.dead) and (not flags.paused):
                             if player.currenthat is not None:
@@ -532,9 +535,9 @@ if __name__ == '__main__':
             profiler.start_section('sleep')
             if flags.paused: menus.wait_for_event()
             tiktok.tick(target_fps)
+            profiler.end_section('total')
             profiler.end_section('sleep')
             if DEBUG and not VERY_VERBOSE: print(f"FPS: {current_fps}, {profiler.export_report(', ')}", end='\r')
-            profiler.end_section('total')
         except KeyboardInterrupt:
             flags.running = False
             break
