@@ -191,6 +191,7 @@ if __name__ == '__main__':
 
     # clock
     tiktok = pygame.time.Clock()
+    dt = 20
 
     pygame.display.set_caption(TITLE)
 
@@ -445,7 +446,7 @@ if __name__ == '__main__':
                         pygame.draw.rect(scr, (255,0,0), player.rect, 6)
                     pygame.draw.rect(scr, (0,254, 1), player.rect, 3)
                 if not player.dead:
-                    player.update_keypresses(pygame.key.get_pressed())
+                    player.update_keypresses(pygame.key.get_pressed(), dt)
                 player.update_pos()
                 tina = tinacontainer.get_tina()
                 if tinacontainer.has_tina():
@@ -534,7 +535,7 @@ if __name__ == '__main__':
             profiler.end_section('render')
             profiler.start_section('sleep')
             if flags.paused: menus.wait_for_event()
-            tiktok.tick(target_fps)
+            dt = tiktok.tick(target_fps)
             profiler.end_section('total')
             profiler.end_section('sleep')
             if DEBUG and not VERY_VERBOSE: print(f"FPS: {current_fps}, {profiler.export_report(', ')}", end='\r')

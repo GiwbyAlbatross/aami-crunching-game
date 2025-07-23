@@ -255,11 +255,11 @@ class Player(Entity):
             logdeath("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'))
             if not VERY_VERBOSE: print("\033[1mNoswald", "was crunched", (f"by {self.crunchedBy}.\033[0m" if self.crunchedBy is not None else '.'), flush=True)
             self.dead = True
-    def update_keypresses(self, pressed_keys):
+    def update_keypresses(self, pressed_keys, dt: int=17):
         if not flags.paused:
             if VERY_VERBOSE and random.random() < 0.05: print("\033[2;36mUpdating player position\033[0m")
             
-            speed = self.speed
+            speed = self.speed * (dt/16)
             
             if pressed_keys[K_SPACE]:
                 # jump
