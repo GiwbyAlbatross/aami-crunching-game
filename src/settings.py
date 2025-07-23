@@ -9,12 +9,12 @@ GFX_MODE = 2 # determines how graphics-intensive this should be
 FULLSCREEN = False
 DRAW_ON_SCREENSHOT = False
 
-VERSION = 'v1.3.1-BETA'
+VERSION = 'v1.3.1+1-BETA (patch 1)'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
 VERY_VERBOSE = False # MUST be False in release versions
-RENDER_DEBUG_WINDOW = True
+RENDER_DEBUG_WINDOW = False
 
 #   Here's a fun ASCII-art beacon for you to look at
 # #
