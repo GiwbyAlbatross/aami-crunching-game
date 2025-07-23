@@ -17,8 +17,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint
+        pip install pylint mypy
         pip install pygame-ce
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') || echo "Pylint exiged with exit code $? but it doesn't really matter."
+        pylint $(git ls-files '*.py') || echo "Pylint exited with exit code $? but it doesn't really matter."
+        mypy $(git ls-files '*.py') || echo "Mypy exited with exit code $? but I don't presently care"
