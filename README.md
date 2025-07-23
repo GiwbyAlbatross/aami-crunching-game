@@ -21,10 +21,11 @@ Long story short, I bunch of television ads.
 # World Record
 This is the current world record, as outputted by the game:
 ```
-Score: 862, Level: 22
-So you crunched 1807 AAMIs!
+Score: 9, Level: 10
+So you crunched 414 AAMIs!
 Which is a HIGH SCORE!
 ```
+The old record (1807 or something) was cheated. I'm sorry. At the time it was a zero-day bug but whatever now.
 
 ## profiling and typechecking
 Currently, `mypy_output` is the output rom mypy about hings to fix and `profile` is the output from cProfile about what's taking how long, etc.
