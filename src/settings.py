@@ -9,12 +9,12 @@ GFX_MODE = 2 # determines how graphics-intensive this should be
 FULLSCREEN = False
 DRAW_ON_SCREENSHOT = False
 
-VERSION = 'v1.3.1+1-BETA (patch 1)'
+VERSION = 'v1.3.2-dev'
 
 SHOW_FPS = True
 DEBUG = True  # should be False for release versions
 VERY_VERBOSE = False # MUST be False in release versions
-RENDER_DEBUG_WINDOW = False
+RENDER_DEBUG_WINDOW = True 
 
 #   Here's a fun ASCII-art beacon for you to look at
 # #
@@ -39,7 +39,7 @@ DRAW_ON_SCREENSHOT = args.transparent
 # make tweaks to settings (programatically, don't change this to change the settings of the game)
 DEBUG = DEBUG and __debug__ # debug calls don't happen in optimised mode
 VERY_VERBOSE = VERY_VERBOSE and DEBUG # can't be very verbose in not debug mode
-RENDER_DEBUG_WINDOW = RENDER_DEBUG_WINDOW and DEBUG # only render debug window in debug mode
+RENDER_DEBUG_WINDOW = (RENDER_DEBUG_WINDOW and DEBUG) or VERY_VERBOSE # only render debug window in debug mode
 SHOW_FPS = SHOW_FPS and __debug__ # don't show FPS counter in optimised mode
 tinafey_likelihood = 1024 // HARDNESS # specify likelihood that tina will spawn
 GFX_MODE = GFX_MODE if __debug__ else max(GFX_MODE, 3) # don't push graphics too high in optimised mode

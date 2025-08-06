@@ -353,6 +353,12 @@ if __name__ == '__main__':
                     if random.random() > 0.9:
                         flags.vfx.add(Particle('bread', start_pos=(random.randint(-25, scr_w), -25), size=(44,44)))
                     
+                    if random.random() < flags.level/10 or random.random() < flags.score / 1000:
+                        if VERY_VERBOSE: print("\033[33mAdding extra AAMI because the player has gotten this far.\033[0m")
+                        new_AAMI = AAMI((0,random.randint(0,scr_h)))
+                        AAMIs.add(new_AAMI)
+                        del new_AAMI
+                    
                     if flags.level >= 1:
                         # do fancy 'level 2' things
                         if random.random() < 0.05:
@@ -370,20 +376,20 @@ if __name__ == '__main__':
                         snoop.update_logic()
                     profiler.end_section('tick')
                 elif event.type == ADD_AAMI and not flags.paused:
-                        # add an AAMI to the collection of AAMIs
-                        new_AAMI = AAMI((0,random.randint(0,scr_h)))
-                        AAMIs.add(new_AAMI)
-                        del new_AAMI
-                        # we also make an attempt to drop a hat for the player
-                        # to catch and gain abilities from
-                        if random.random() > 0.69:
-                            #dropped_hat = Hat(random.randint(0,scr_w), 'top')
-                            dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
-                            if DEBUG: flags.debugwindow.log_hatevent(hatevent)
-                            falling_hats.add(dropped_hat)
-                            effect.process_hat_event(hatevent)
-                            if VERY_VERBOSE: print(f'\033[33mAdding hat {dropped_hat}. HatEvent: {bin(hatevent)}\033[0m')
-                            del dropped_hat, hatevent
+                    # add an AAMI to the collection of AAMIs
+                    new_AAMI = AAMI((0,random.randint(0,scr_h)))
+                    AAMIs.add(new_AAMI)
+                    del new_AAMI
+                    # we also make an attempt to drop a hat for the player
+                    # to catch and gain abilities from
+                    if random.random() > 0.69:
+                        #dropped_hat = Hat(random.randint(0,scr_w), 'top')
+                        dropped_hat, hatevent = effect.get_hat(posx=random.randint(0, scr_w))
+                        if DEBUG: flags.debugwindow.log_hatevent(hatevent)
+                        falling_hats.add(dropped_hat)
+                        effect.process_hat_event(hatevent)
+                        if VERY_VERBOSE: print(f'\033[33mAdding hat {dropped_hat}. HatEvent: {bin(hatevent)}\033[0m')
+                        del dropped_hat, hatevent
                 elif event.type == GET_FPS:
                     print(f"FPS: {current_fps}", end='\r')
                 elif event.type == KEYDOWN:
