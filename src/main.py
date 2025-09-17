@@ -211,7 +211,7 @@ if __name__ == '__main__':
                     if flags.paused: continue # skip ticks when paused
                     profiler.start_section('tick')
                     # do game tick stuff
-                    player.update_logic() # this being commented out caused issue #1
+                    player.update_logic() # this being commented out caused issue #5
                     player.currenthat = currenthat
                     AAMIs_crunched = flags.score
                     before_AAMIs_crunched = AAMIs_crunched
@@ -406,8 +406,10 @@ if __name__ == '__main__':
                                 flags.level += 1 # level up!!! This will be used to get to higher levels in future...
                         else:
                             # future: change to open paused menu instead
-                            flags.running = False
-                            running = 0
+                            # THE FUTURE IS NOW NOW
+                            #flags.running = False
+                            flags.paused = not flags.paused
+                            #running = 0 # is `running` even still used? TODO: document and check (resolve to `flags.running` in future)
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_SPACE:
