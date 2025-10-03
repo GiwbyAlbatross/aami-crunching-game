@@ -18,6 +18,8 @@ pygame.font.init()
 MAINMENU_MARGIN_X = 96
 MAINMENU_MARGIN_Y = 64
 
+MENU_EVENTS = {KEYDOWN, MOUSEBUTTONDOWN, MOUSEMOTION}
+
 def debug(func):
     "decorator to make function only run if DEBUG is true"
     @_wraps(func)
@@ -263,8 +265,9 @@ class DebugWindow(Window):
         self.renderText(f"Number of doordack orders: {len(self.flags.doordack_orders)}", 4)
         self.renderText(f"Level: {self.flags.level}", 5)
         self.renderText(f"Current Level.passed: {self.flags.levels[self.flags.level].passed}", 6)
+        self.renderText(f"Events in main menu: {self.flags.mainmenu.events_since_render}", 7)
         for i, line in enumerate(self.flags.profiler.export_report().split('\n')):
-            self.renderText(line, 7+i)
+            self.renderText(line, 8+i)
         #self.renderText("Flags:", 1)
         #self.renderText(repr(self.flags), 2)
         self.renderText(HatEventType.toString(self.hatevent), self.lines-1)

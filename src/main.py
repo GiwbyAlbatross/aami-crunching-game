@@ -201,7 +201,7 @@ if __name__ == '__main__':
         try:
             profiler.start_section('event_processing')
             for event in pygame.event.get():
-                if flags.paused: flags.mainmenu.process_event(event)
+                if flags.paused and event.type in menus.MENU_EVENTS: flags.mainmenu.process_event(event)
                 if event.type == QUIT:
                     running = 0
                     flags.running = False
@@ -409,13 +409,14 @@ if __name__ == '__main__':
                             # THE FUTURE IS NOW NOW
                             #flags.running = False
                             flags.paused = not flags.paused
+                            flags.mainmenu.events_since_render += 1
                             #running = 0 # is `running` even still used? TODO: document and check (resolve to `flags.running` in future)
                     elif event.key == K_F3 and __debug__:
                         flags.show_hitboxes = not flags.show_hitboxes
                     elif event.key == K_SPACE:
                         flags.paused = not flags.paused
                         target_fps = 5 if flags.paused and GFX_MODE < 3 else FPS
-                        flags.mainmenu.events_since_render = 1
+                        flags.mainmenu.events_since_render += 1
                     elif event.key == K_z:
                         if (not player.dead) and (not flags.paused):
                             if player.currenthat is not None:
@@ -525,6 +526,7 @@ if __name__ == '__main__':
             profiler.start_section('render_window')
             if RENDER_DEBUG_WINDOW: # render debug window
                 debugwindow = flags.debugwindow
+                debugwindow.update()
                 scr.blit(debugwindow, (scr_w - (15 + debugwindow.width), scr_h - (15 + debugwindow.height)))
                 del debugwindow
             if flags.paused:
